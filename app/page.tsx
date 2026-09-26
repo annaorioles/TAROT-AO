@@ -345,40 +345,30 @@ export default function Home(){
     });
   }
 
-  function chooseByPosition(){
+  function chooseByPosition(position:number){
     if(!started || reading || selectionMode !== "position") return;
 
-    const position = Number.parseInt(positionInput, 10);
-
-    if(!Number.isInteger(position) || position < 1 || position > 78){
-      setSelectionNotice("Escribe una posición entre 1 y 78.");
-      return;
-    }
+    if(!Number.isInteger(position) || position < 1 || position > 78) return;
 
     const card = deckOrder[position - 1];
-
-    if(!card){
-      setSelectionNotice("No se ha encontrado esa posición.");
-      return;
-    }
+    if(!card) return;
 
     if(card.slot != null){
-      setSelectionNotice(`La posición ${position} ya forma parte de tu tirada.`);
+      setSelectionNotice(`La posición ${position} ya está seleccionada.`);
       return;
     }
 
-    chooseByPositionCommit(card);
-  }
+    const selectedCount = deckOrder.filter(item => item.slot != null).length;
+    if(selectedCount >= count){
+      setSelectionNotice(`Esta tirada necesita ${count} carta${count === 1 ? "" : "s"}.`);
+      return;
+    }
 
-  function chooseByPositionCommit(card:Card){
-    // La carta se obtiene del orden ya mezclado; el número nunca identifica la carta.
-    setDeckOrder(order => {
-      const selectedCount = order.filter(item => item.slot != null).length;
-      if(selectedCount >= count) return order;
-      const nextSlot = selectedCount + 1;
-      return order.map(item => item.id === card.id ? {...item, slot: nextSlot} : item);
-    });
-    setPositionInput("");
+    const nextSlot = selectedCount + 1;
+
+    setDeckOrder(order =>
+      order.map(item => item.id === card.id ? {...item, slot: nextSlot} : item)
+    );
     setSelectionNotice("");
   }
 
@@ -682,10 +672,10 @@ export default function Home(){
               <button
                 className={selectionMode === "card" ? "primary" : "secondary"}
                 type="button"
-                onClick={() => {setSelectionMode("card"); setSelectionNotice(""); setPositionInput("");}}
+                onClick={() => {setSelectionMode("card"); setSelectionNotice("");}}
                 disabled={picked.length >= count}
               >
-                🃏 Escoger por carta
+                🃏 Escoger por vista
               </button>
 
               <button
@@ -694,62 +684,59 @@ export default function Home(){
                 onClick={() => {setSelectionMode("position"); setSelectionNotice("");}}
                 disabled={picked.length >= count}
               >
-                🔢 Escoger por posición numérica
+                🔢 Escoger por número
               </button>
             </div>
 
             {selectionMode === "card" ? (
               <p style={{margin:"10px 0 0", opacity:0.72, fontSize:"0.92rem"}}>
-                La baraja ya está mezclada. Pulsa directamente la carta que quieras elegir.
+                La baraja ya está mezclada. Pulsa directamente las cartas que quieras elegir.
               </p>
             ) : (
-              <div
-                className="positionPicker"
-                style={{
-                  display:"flex",
-                  flexWrap:"wrap",
-                  alignItems:"center",
-                  gap:"10px",
-                  margin:"14px 0 0"
-                }}
-              >
-                <label htmlFor="positionInput" style={{fontWeight:700}}>
-                  Posición de la carta
-                </label>
-
-                <input
-                  id="positionInput"
-                  type="number"
-                  min="1"
-                  max="78"
-                  inputMode="numeric"
-                  value={positionInput}
-                  onChange={e => {setPositionInput(e.target.value); setSelectionNotice("");}}
-                  onKeyDown={e => {if(e.key === "Enter") chooseByPosition();}}
-                  placeholder="1–78"
-                  aria-label="Número de posición de la carta después de barajar"
+              <div style={{margin:"16px 0 0"}}>
+                <div style={{fontWeight:700, marginBottom:"10px"}}>
+                  Marca {count === 1 ? "1 número" : `${count} números`} de la baraja mezclada.
+                </div>
+                <div
+                  role="group"
+                  aria-label={`Selecciona ${count} posiciones entre 1 y 78`}
                   style={{
-                    width:"88px",
-                    padding:"10px 12px",
-                    border:"1px solid currentColor",
-                    borderRadius:"8px",
-                    background:"transparent",
-                    fontSize:"16px"
+                    display:"grid",
+                    gridTemplateColumns:"repeat(13, minmax(34px, 1fr))",
+                    gap:"6px",
+                    maxWidth:"760px"
                   }}
-                />
-
-                <button
-                  className="secondary"
-                  type="button"
-                  onClick={chooseByPosition}
-                  disabled={!positionInput || picked.length >= count}
                 >
-                  Elegir esta posición
-                </button>
-
-                <span style={{opacity:0.7,fontSize:"0.9rem"}}>
-                  Es la posición actual de la carta en la baraja ya mezclada.
-                </span>
+                  {Array.from({length:78}, (_, index) => {
+                    const position = index + 1;
+                    const selectedAtPosition = deckOrder[position - 1]?.slot != null;
+                    return (
+                      <button
+                        key={position}
+                        type="button"
+                        aria-pressed={selectedAtPosition}
+                        aria-label={`Posición ${position}${selectedAtPosition ? ", seleccionada" : ""}`}
+                        onClick={() => chooseByPosition(position)}
+                        disabled={!selectedAtPosition && picked.length >= count}
+                        style={{
+                          minHeight:"40px",
+                          border:"1px solid currentColor",
+                          borderRadius:"7px",
+                          background:selectedAtPosition ? "currentColor" : "transparent",
+                          color:selectedAtPosition ? "var(--bg, #fff)" : "inherit",
+                          cursor:(!selectedAtPosition && picked.length >= count) ? "not-allowed" : "pointer",
+                          fontWeight:700,
+                          opacity:(!selectedAtPosition && picked.length >= count) ? 0.35 : 1
+                        }}
+                      >
+                        {String(position).padStart(2,"0")}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={{margin:"10px 0 0", opacity:0.72, fontSize:"0.9rem"}}>
+                  Solo ves números. Las cartas permanecen ocultas. Cada número corresponde a una posición de la baraja después de barajar.
+                </p>
               </div>
             )}
 
@@ -769,7 +756,8 @@ export default function Home(){
         </div>
       </div>
 
-      <div className="deckToolbar"><span>{started ? "78 CARTAS · BARAJADAS" : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "Inicia la tirada para elegir" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
+      <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "Inicia la tirada para elegir" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
+      {selectionMode === "card" && (
       <div className="deck" aria-label="Baraja de 78 cartas">
         {deckOrder.map((c) => {
           const pickNumber = c.slot != null ? c.slot - 1 : -1;
@@ -855,7 +843,7 @@ export default function Home(){
           );
         })}
       </div>
-
+      )}
 
     </section>
 

@@ -870,8 +870,14 @@ export default function Home(){
               className={`${isPicked ? "tarot picked" : "tarot"} ${!started ? "preStart" : ""}`}
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
-              onClick={() => started && selectionMode === "card" && choose(c)}
-              disabled={!started || selectionMode !== "card"}
+              onClick={() => {
+                if (!started) {
+                  setZoomCard(c);
+                } else if (selectionMode === "card") {
+                  choose(c);
+                }
+              }}
+              disabled={started && selectionMode !== "card"}
               aria-label={!started ? c.name : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
               title={!started ? c.name : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Posición ${deckOrder.indexOf(c) + 1}`}
             >

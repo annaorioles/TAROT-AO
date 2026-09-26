@@ -9,6 +9,8 @@ type Card = {
   essence: string;
   light: string;
   shadow: string;
+  advice: string;
+  keywords?: string;
   slot?: number;
 };
 
@@ -26,64 +28,92 @@ type Category = {
 };
 
 const majors: Card[] = [
-  ["00","El Loco","00-el-loco.png","inicio, libertad y salto hacia lo desconocido","atreverse sin exigir certezas","impulsividad o huida de la responsabilidad"],
-  ["01","El Mago","01-el-mago.png","recursos, iniciativa y capacidad de actuar","agencia y creatividad","dispersión o manipulación"],
-  ["02","La Sacerdotisa","02-la-sacerdotisa.png","silencio, intuición y conocimiento interior","escucha y percepción fina","pasividad, secreto o esperar que el otro adivine"],
-  ["03","La Emperatriz","03-la-emperatriz.png","deseo, creación y aquello que necesita cuidado","nutrir y hacer crecer","sobreproteger o confundir cuidado con control"],
-  ["04","El Emperador","04-el-emperador.png","estructura, límites y responsabilidad","estabilidad y autoridad propia","rigidez o necesidad de controlar"],
-  ["05","El Sacerdote","05-el-sacerdote.png","valores, aprendizaje y marcos compartidos","sentido y guía","dogma o vivir según expectativas ajenas"],
-  ["06","Los Enamorados","06-los-enamorados.png","elección, vínculo y coherencia","elegir desde los valores","indecisión o elegir por miedo a perder"],
-  ["07","El Carro","07-el-carro.png","dirección, voluntad y avance","tomar las riendas","forzar o correr sin integrar fuerzas opuestas"],
-  ["08","La Fuerza","08-la-fuerza.png","coraje sereno e integración del impulso","firmeza sin violencia","contención excesiva o lucha interna"],
-  ["09","El Ermitaño","09-el-ermitano.png","discernimiento, retiro fértil y búsqueda","escuchar la propia verdad","aislamiento o postergar indefinidamente"],
-  ["10","La Rueda de la Fortuna","10-la-rueda-de-la-fortuna.png","cambio de ciclo y factores no controlables","adaptarse al movimiento","pasividad ante el cambio"],
-  ["11","La Justicia","11-la-justicia.png","hechos, límites y responsabilidad","claridad y decisiones sostenibles","juicio frío o autoexigencia"],
-  ["12","El Colgado","12-el-colgado.png","pausa, perspectiva y renuncia a forzar","ver de otra manera","estancamiento o sacrificio sin sentido"],
-  ["13","La Muerte","13-la-muerte.png","fin de una forma y transformación","soltar lo agotado","resistencia al cambio"],
-  ["14","La Templanza","14-la-templanza.png","integración, diálogo, tiempo y equilibrio","regular y mezclar sin borrar diferencias","diluir necesidades o esperar demasiado"],
-  ["15","El Diablo","15-el-diablo.png","deseo, intensidad, apego y poder personal","reconocer el deseo sin negarlo","dependencia, compulsión o vínculo que encadena"],
-  ["16","La Torre","16-la-torre.png","ruptura de una estructura que ya no sostiene","liberación y verdad","caos o aferrarse a lo que cae"],
-  ["17","La Estrella","17-la-estrella.png","confianza, vulnerabilidad e inspiración","recuperar orientación","idealización o esperar una salvación externa"],
-  ["18","La Luna","18-la-luna.png","incertidumbre, proyección, miedo e intuición","dar espacio a lo inconsciente","confundir temor con intuición o fantasía con evidencia"],
-  ["19","El Sol","19-el-sol.png","claridad, vitalidad y evidencia","mostrar y compartir","exceso de certeza o necesidad de reconocimiento"],
-  ["20","El Juicio","20-el-juicio.png","despertar, revisión y llamada a responder","reconocer lo aprendido","culpa o vivir atrapado en el pasado"],
-  ["21","El Mundo","21-el-mundo.png","culminación, integración y cambio de nivel","completar e integrar","cerrar en falso o no reconocer lo conseguido"]
-].map(([id,name,file,essence,light,shadow]) => ({id,name,file,essence,light,shadow}));
+  ["00","El Loco","00-el-loco.png","Inicio, libertad, aventura y salto hacia lo desconocido","Espontaneidad, confianza","Impulsividad o falta de rumbo","Atrévete a comenzar","inicio · libertad · aventura"],
+  ["01","El Mago","01-el-mago.png","Acción, potencial y capacidad de crear y materializar","Iniciativa, habilidad, creatividad","Dispersión o manipulación","Utiliza lo que ya tienes","acción · potencial · creación"],
+  ["02","La Sacerdotisa","02-la-sacerdotisa.png","Intuición, silencio y conocimiento interior","Sabiduría, percepción","Pasividad o secretos","Escucha tu intuición","intuición · misterio · conocimiento interior"],
+  ["03","La Emperatriz","03-la-emperatriz.png","Creación, abundancia y fertilidad","Creatividad, amor, expansión","Dependencia o exceso","Nutre aquello que quieres hacer crecer","creación · abundancia · fertilidad"],
+  ["04","El Emperador","04-el-emperador.png","Orden, estructura, autoridad y responsabilidad","Estabilidad, liderazgo","Rigidez o necesidad de controlar","Construye una estructura sólida","orden · estructura · autoridad"],
+  ["05","El Sacerdote","05-el-sacerdote.png","Enseñanza, tradición y valores compartidos","Guía, aprendizaje","Dogma o conformismo","Busca conocimiento y orientación","enseñanza · tradición · valores"],
+  ["06","Los Enamorados","06-los-enamorados.png","Elección, vínculo y coherencia con los valores","Amor, unión, decisión consciente","Duda o conflicto","Elige desde tus valores","elección · vínculo · decisión"],
+  ["07","El Carro","07-el-carro.png","Movimiento, voluntad, dirección y conquista","Determinación, avance","Prisa o falta de control","Dirige tu energía hacia un objetivo","movimiento · voluntad · avance"],
+  ["08","La Fuerza","08-la-fuerza.png","Poder interior, coraje sereno y dominio del impulso","Coraje, paciencia, confianza","Represión o inseguridad","La verdadera fuerza nace del equilibrio","coraje · autocontrol · poder interior"],
+  ["09","El Ermitaño","09-el-ermitano.png","Introspección, búsqueda interior y sabiduría","Claridad, discernimiento","Aislamiento o distancia","Detente para encontrar tu propia respuesta","introspección · búsqueda · sabiduría"],
+  ["10","La Rueda de la Fortuna","10-la-rueda-de-la-fortuna.png","Cambio, ciclos y giro de las circunstancias","Oportunidad, movimiento","Inestabilidad o resistencia","Acepta el cambio y adáptate","cambio · ciclos · movimiento"],
+  ["11","La Justicia","11-la-justicia.png","Equilibrio, verdad, responsabilidad y consecuencias","Claridad, responsabilidad","Rigidez o juicio","Actúa con honestidad","equilibrio · verdad · responsabilidad"],
+  ["12","El Colgado","12-el-colgado.png","Pausa, entrega y cambio de perspectiva","Nueva mirada, aceptación","Estancamiento o sacrificio inútil","Cambia tu perspectiva","pausa · perspectiva · entrega"],
+  ["13","La Muerte","13-la-muerte.png","Transformación y cierre de una etapa","Renovación, liberación","Resistencia o miedo al cambio","Deja espacio para lo nuevo","transformación · cierre · renacimiento"],
+  ["14","La Templanza","14-la-templanza.png","Integración, armonía y equilibrio","Equilibrio, sanación","Exceso o desequilibrio","Encuentra el punto medio","integración · armonía · paciencia"],
+  ["15","El Diablo","15-el-diablo.png","Deseo, materia, instinto, apego y poder personal","Pasión, vitalidad, poder","Dependencia u obsesión","Reconoce aquello que te ata","deseo · apego · instinto"],
+  ["16","La Torre","16-la-torre.png","Ruptura y revelación de una estructura que ya no sostiene","Liberación, verdad","Crisis o resistencia","Permite que caiga lo que ya no sostiene","ruptura · revelación · liberación"],
+  ["17","La Estrella","17-la-estrella.png","Esperanza, inspiración, confianza y renovación","Fe, creatividad, renovación","Idealización o vulnerabilidad","Confía en el proceso","esperanza · inspiración · renovación"],
+  ["18","La Luna","18-la-luna.png","Mundo emocional, inconsciente, intuición e incertidumbre","Imaginación, intuición","Miedo, confusión o ilusión","No confundas percepción con realidad","inconsciente · intuición · emociones"],
+  ["19","El Sol","19-el-sol.png","Claridad, alegría, vitalidad y conciencia","Éxito, autenticidad","Ego o exceso de confianza","Muéstrate con claridad","claridad · alegría · vitalidad"],
+  ["20","El Juicio","20-el-juicio.png","Despertar, llamada interior y revisión","Renacimiento, conciencia","Culpa o juicio excesivo","Escucha la llamada y responde","despertar · revisión · renacimiento"],
+  ["21","El Mundo","21-el-mundo.png","Culminación, integración y realización","Plenitud, integración","Cierre incompleto","Reconoce lo conseguido y completa el ciclo","culminación · integración · realización"]
+].map(([id,name,file,essence,light,shadow,advice,keywords]) => ({id,name,file,essence,light,shadow,advice,keywords}));
 
-const suitData = [
-  {start:22, names:["As de Copas","Dos de Copas","Tres de Copas","Cuatro de Copas","Cinco de Copas","Seis de Copas","Siete de Copas","Ocho de Copas","Nueve de Copas","Diez de Copas","Sota de Copas","Caballero de Copas","Reina de Copas","Rey de Copas"], files:["as-de-copas","dos-de-copas","tres-de-copas","cuatro-de-copas","cinco-de-copas","seis-de-copas","siete-de-copas","ocho-de-copas","nueve-de-copas","diez-de-copas","sota-de-copas","caballero-de-copas","reina-de-copas","rey-de-copas"], area:"emociones, vínculos y mundo afectivo"},
-  {start:36, names:["As de Espadas","Dos de Espadas","Tres de Espadas","Cuatro de Espadas","Cinco de Espadas","Seis de Espadas","Siete de Espadas","Ocho de Espadas","Nueve de Espadas","Diez de Espadas","Sota de Espadas","Caballero de Espadas","Reina de Espadas","Rey de Espadas"], files:["as-de-espadas","dos-de-espadas","tres-de-espadas","cuatro-de-espadas","cinco-de-espadas","seis-de-espadas","siete-de-espadas","ocho-de-espadas","nueve-de-espadas","diez-de-espadas","sota-de-espadas","caballero-de-espadas","reina-de-espadas","rey-de-espadas"], area:"pensamiento, verdad y conflicto mental"},
-  {start:50, names:["As de Bastos","Dos de Bastos","Tres de Bastos","Cuatro de Bastos","Cinco de Bastos","Seis de Bastos","Siete de Bastos","Ocho de Bastos","Nueve de Bastos","Diez de Bastos","Sota de Bastos","Caballero de Bastos","Reina de Bastos","Rey de Bastos"], files:["as-de-bastos","dos-de-bastos","tres-de-bastos","cuatro-de-bastos","cinco-de-bastos","seis-de-bastos","siete-de-bastos","ocho-de-bastos","nueve-de-bastos","diez-de-bastos","sota-de-bastos","caballero-de-bastos","reina-de-bastos","rey-de-bastos"], area:"energía, deseo, acción y creatividad"},
-  {start:64, names:["As de Oros","Dos de Oros","Tres de Oros","Cuatro de Oros","Cinco de Oros","Seis de Oros","Siete de Oros","Ocho de Oros","Nueve de Oros","Diez de Oros","Sota de Oros","Caballero de Oros","Reina de Oros","Rey de Oros"], files:["as-de-oros","dos-de-oros","tres-de-oros","cuatro-de-oros","cinco-de-oros","seis-de-oros","siete-de-oros","ocho-de-oros","nueve-de-oros","diez-de-oros","sota-de-oros","caballero-de-oros","reina-de-oros","rey-de-oros"], area:"materia, recursos, cuerpo y construcción"}
-];
+const minorRows = [
+  ["22","As de Copas","22-as-de-copas.png","Nacimiento emocional, amor y apertura del corazón","Apertura emocional, amor, sentimiento nuevo","Bloqueo afectivo o cerrarse a sentir","Permite que tus emociones fluyan","emociones, vínculos y mundo afectivo"],
+  ["23","Dos de Copas","23-dos-de-copas.png","Unión, reciprocidad y conexión","Encuentro, reciprocidad, vínculo","Dependencia o desequilibrio","Busca un vínculo equilibrado","emociones, vínculos y mundo afectivo"],
+  ["24","Tres de Copas","24-tres-de-copas.png","Celebración, amistad y comunidad","Alegría, amistad, celebración","Dispersión o exceso social","Comparte la alegría","emociones, vínculos y mundo afectivo"],
+  ["25","Cuatro de Copas","25-cuatro-de-copas.png","Introspección y apatía emocional","Contemplación y oportunidad de mirar hacia dentro","Desconexión o ignorar una oportunidad","Observa aquello que estás dejando pasar","emociones, vínculos y mundo afectivo"],
+  ["26","Cinco de Copas","26-cinco-de-copas.png","Pérdida, tristeza y duelo","Aceptación y aprendizaje","Quedarse atrapado en la pérdida","Mira también lo que permanece","emociones, vínculos y mundo afectivo"],
+  ["27","Seis de Copas","27-seis-de-copas.png","Recuerdos, infancia y nostalgia","Recuperar algo valioso del pasado","Idealizar el pasado o quedarse en él","Recupera algo valioso del pasado sin quedarte en él","emociones, vínculos y mundo afectivo"],
+  ["28","Siete de Copas","28-siete-de-copas.png","Opciones, imaginación e ilusiones","Creatividad y apertura de posibilidades","Confusión o fantasía sin realidad","Distingue deseo de realidad","emociones, vínculos y mundo afectivo"],
+  ["29","Ocho de Copas","29-ocho-de-copas.png","Alejarse de algo que ya no satisface","Búsqueda de sentido y evolución emocional","Aferrarse a lo conocido o huir sin comprender","Busca aquello que tiene verdadero sentido","emociones, vínculos y mundo afectivo"],
+  ["30","Nueve de Copas","30-nueve-de-copas.png","Satisfacción y deseo cumplido","Placer, satisfacción y disfrute","Complacencia o exceso","Disfruta lo conseguido","emociones, vínculos y mundo afectivo"],
+  ["31","Diez de Copas","31-diez-de-copas.png","Plenitud afectiva y armonía familiar","Felicidad emocional, familia, plenitud","Idealizar la armonía o depender de ella","Construye vínculos basados en autenticidad","emociones, vínculos y mundo afectivo"],
+  ["32","Sota de Copas","32-sota-de-copas.png","Sensibilidad, intuición y mensaje emocional","Curiosidad emocional, apertura","Inmadurez o hipersensibilidad","Permanece abierto a sentir","emociones, vínculos y mundo afectivo"],
+  ["33","Caballero de Copas","33-caballero-de-copas.png","Romanticismo, propuesta y movimiento emocional","Expresión afectiva, propuesta","Idealización o impulso emocional","Expresa lo que sientes","emociones, vínculos y mundo afectivo"],
+  ["34","Reina de Copas","34-reina-de-copas.png","Empatía, profundidad y sensibilidad","Comprensión emocional y cuidado","Absorber emociones ajenas o desbordarse","Cuida tus emociones sin absorber las de otros","emociones, vínculos y mundo afectivo"],
+  ["35","Rey de Copas","35-rey-de-copas.png","Madurez emocional y equilibrio","Serenidad, comprensión y dominio emocional","Contención excesiva o distancia emocional","Siente profundamente y actúa con serenidad","emociones, vínculos y mundo afectivo"],
+  ["36","As de Espadas","36-as-de-espadas.png","Claridad, verdad y decisión","Claridad mental, verdad","Dureza o cortar sin integrar","Corta la confusión con una verdad clara","pensamiento, verdad y conflicto mental"],
+  ["37","Dos de Espadas","37-dos-de-espadas.png","Indecisión y bloqueo","Pausa para reunir información","Evitar decidir o cerrar los ojos","Permite que la información te ayude a decidir","pensamiento, verdad y conflicto mental"],
+  ["38","Tres de Espadas","38-tres-de-espadas.png","Dolor, separación y verdad difícil","Reconocer la verdad y comenzar a integrar","Quedarse en la herida","Reconoce la herida para poder integrarla","pensamiento, verdad y conflicto mental"],
+  ["39","Cuatro de Espadas","39-cuatro-de-espadas.png","Descanso, pausa y recuperación","Recuperación y perspectiva","Aislamiento prolongado o evitar actuar","Detenerse también forma parte del proceso","pensamiento, verdad y conflicto mental"],
+  ["40","Cinco de Espadas","40-cinco-de-espadas.png","Conflicto y victoria con coste","Aprender de un conflicto y elegir batallas","Enfrentamiento innecesario","Decide qué batallas merecen tu energía","pensamiento, verdad y conflicto mental"],
+  ["41","Seis de Espadas","41-seis-de-espadas.png","Transición y desplazamiento hacia aguas más tranquilas","Cambio y transición","Aferrarse a una etapa agotada","Permite que el cambio te lleve hacia una nueva etapa","pensamiento, verdad y conflicto mental"],
+  ["42","Siete de Espadas","42-siete-de-espadas.png","Estrategia, discreción y autonomía","Inteligencia estratégica y autonomía","Ocultación, evasión o falta de transparencia","Actúa con inteligencia y transparencia","pensamiento, verdad y conflicto mental"],
+  ["43","Ocho de Espadas","43-ocho-de-espadas.png","Sensación de limitación mental","Cuestionar las creencias que limitan","Sentirse atrapado sin revisar las propias creencias","Revisa las creencias que están condicionando tus opciones","pensamiento, verdad y conflicto mental"],
+  ["44","Nueve de Espadas","44-nueve-de-espadas.png","Preocupación, ansiedad y pensamientos repetitivos","Tomar conciencia de los pensamientos","Anticipación y escenarios mentales repetitivos","Separa los hechos de los escenarios mentales","pensamiento, verdad y conflicto mental"],
+  ["45","Diez de Espadas","45-diez-de-espadas.png","Final de una etapa dolorosa","Liberación y nuevo comienzo","Resistirse al cierre o identificarse con el dolor","Acepta el cierre","pensamiento, verdad y conflicto mental"],
+  ["46","Sota de Espadas","46-sota-de-espadas.png","Curiosidad, observación y comunicación","Investigación y aprendizaje","Impulsividad verbal o mirar sin comprender","Pregunta, investiga y aprende","pensamiento, verdad y conflicto mental"],
+  ["47","Caballero de Espadas","47-caballero-de-espadas.png","Acción mental rápida","Determinación y decisión","Precipitación o confrontación","Piensa antes de actuar","pensamiento, verdad y conflicto mental"],
+  ["48","Reina de Espadas","48-reina-de-espadas.png","Claridad, independencia y discernimiento","Lucidez y límites sanos","Frialdad o exceso de distancia","Establece límites desde la verdad","pensamiento, verdad y conflicto mental"],
+  ["49","Rey de Espadas","49-rey-de-espadas.png","Razón, autoridad intelectual y justicia","Lógica, perspectiva y decisión","Rigidez intelectual o abuso de autoridad","Decide con lógica y perspectiva","pensamiento, verdad y conflicto mental"],
+  ["50","As de Bastos","50-as-de-bastos.png","Nacimiento de una energía creativa","Inspiración, entusiasmo, oportunidad","Impulso sin dirección","Empieza; la energía está disponible","energía, deseo, acción y creatividad"],
+  ["51","Dos de Bastos","51-dos-de-bastos.png","Planificación y visión","Estrategia y expansión","Quedarse pensando sin decidir","Mira más lejos y decide tu dirección","energía, deseo, acción y creatividad"],
+  ["52","Tres de Bastos","52-tres-de-bastos.png","Expansión","Crecimiento y resultados futuros","Esperar demasiado","Confía en lo que has puesto en marcha","energía, deseo, acción y creatividad"],
+  ["53","Cuatro de Bastos","53-cuatro-de-bastos.png","Celebración y estabilidad","Hogar, comunidad y alegría","Acomodamiento","Celebra los logros","energía, deseo, acción y creatividad"],
+  ["54","Cinco de Bastos","54-cinco-de-bastos.png","Competencia y fricción","Estímulo y aprendizaje","Conflicto innecesario","Convierte la fricción en energía creativa","energía, deseo, acción y creatividad"],
+  ["55","Seis de Bastos","55-seis-de-bastos.png","Reconocimiento","Éxito y confianza","Necesidad de aprobación","Reconoce tu propio avance","energía, deseo, acción y creatividad"],
+  ["56","Siete de Bastos","56-siete-de-bastos.png","Defender una posición","Valentía y perseverancia","Estar siempre a la defensiva","Protege aquello que realmente importa","energía, deseo, acción y creatividad"],
+  ["57","Ocho de Bastos","57-ocho-de-bastos.png","Velocidad y movimiento","Noticias, avance y comunicación","Precipitación","Aprovecha el impulso","energía, deseo, acción y creatividad"],
+  ["58","Nueve de Bastos","58-nueve-de-bastos.png","Resistencia","Perseverancia y experiencia","Agotamiento o desconfianza","Estás cerca; administra tus fuerzas","energía, deseo, acción y creatividad"],
+  ["59","Diez de Bastos","59-diez-de-bastos.png","Carga y responsabilidad","Compromiso y capacidad","Sobrecarga","Aprende a delegar","energía, deseo, acción y creatividad"],
+  ["60","Sota de Bastos","60-sota-de-bastos.png","Curiosidad y descubrimiento","Entusiasmo y aventura","Inmadurez","Explora y aprende","energía, deseo, acción y creatividad"],
+  ["61","Caballero de Bastos","61-caballero-de-bastos.png","Acción apasionada","Valentía y dinamismo","Impulsividad","Avanza, pero dirige tu fuego","energía, deseo, acción y creatividad"],
+  ["62","Reina de Bastos","62-reina-de-bastos.png","Confianza y magnetismo","Creatividad e independencia","Orgullo o intensidad","Ocupa tu espacio con autenticidad","energía, deseo, acción y creatividad"],
+  ["63","Rey de Bastos","63-rey-de-bastos.png","Liderazgo creativo","Visión e iniciativa","Autoritarismo","Lidera inspirando","energía, deseo, acción y creatividad"],
+  ["64","As de Oros","64-as-de-oros.png","Nueva oportunidad material","Oportunidad concreta y recursos","Dejar pasar la oportunidad o no materializarla","Convierte la oportunidad en algo concreto","materia, recursos, cuerpo y construcción"],
+  ["65","Dos de Oros","65-dos-de-oros.png","Adaptación y equilibrio práctico","Flexibilidad y gestión de recursos","Desorden o intentar sostener demasiado","Organiza tus recursos","materia, recursos, cuerpo y construcción"],
+  ["66","Tres de Oros","66-tres-de-oros.png","Trabajo conjunto y aprendizaje","Colaboración y desarrollo de habilidades","Trabajar aislado o no valorar la colaboración","Construye con otros","materia, recursos, cuerpo y construcción"],
+  ["67","Cuatro de Oros","67-cuatro-de-oros.png","Seguridad y conservación","Protección y estabilidad","Apego y miedo a perder","Protege sin encerrarte","materia, recursos, cuerpo y construcción"],
+  ["68","Cinco de Oros","68-cinco-de-oros.png","Carencia y sensación de exclusión","Buscar apoyo y reconocer recursos disponibles","Aislamiento o asumir que no hay salida","Busca apoyo y recursos disponibles","materia, recursos, cuerpo y construcción"],
+  ["69","Seis de Oros","69-seis-de-oros.png","Dar, recibir y reciprocidad","Generosidad e intercambio equilibrado","Dependencia o desequilibrio entre dar y recibir","Equilibra generosidad y autonomía","materia, recursos, cuerpo y construcción"],
+  ["70","Siete de Oros","70-siete-de-oros.png","Paciencia y evaluación","Observar el crecimiento y valorar resultados","Impaciencia o abandonar demasiado pronto","Observa qué está creciendo antes de decidir el siguiente paso","materia, recursos, cuerpo y construcción"],
+  ["71","Ocho de Oros","71-ocho-de-oros.png","Trabajo, práctica y perfeccionamiento","Constancia y desarrollo de maestría","Perfeccionismo o trabajar sin sentido","La maestría nace de la constancia","materia, recursos, cuerpo y construcción"],
+  ["72","Nueve de Oros","72-nueve-de-oros.png","Independencia y prosperidad","Autonomía, disfrute y prosperidad","Aislamiento o medir el valor solo por lo material","Disfruta aquello que has construido","materia, recursos, cuerpo y construcción"],
+  ["73","Diez de Oros","73-diez-de-oros.png","Patrimonio, familia y estabilidad a largo plazo","Abundancia, legado y estabilidad","Aferrarse al patrimonio o a expectativas familiares","Piensa en lo que quieres dejar construido","materia, recursos, cuerpo y construcción"],
+  ["74","Sota de Oros","74-sota-de-oros.png","Aprendizaje práctico y oportunidad","Estudio, curiosidad y oportunidad","Inexperiencia o falta de continuidad","Estudia y experimenta","materia, recursos, cuerpo y construcción"],
+  ["75","Caballero de Oros","75-caballero-de-oros.png","Constancia, responsabilidad y progreso lento","Fiabilidad y progreso sostenido","Lentitud excesiva o rigidez","Avanza paso a paso","materia, recursos, cuerpo y construcción"],
+  ["76","Reina de Oros","76-reina-de-oros.png","Cuidado, abundancia y practicidad","Bienestar, cuidado y recursos","Sobreproteger o cargar con todo","Crea bienestar tangible","materia, recursos, cuerpo y construcción"],
+  ["77","Rey de Oros","77-rey-de-oros.png","Estabilidad, experiencia y prosperidad","Administración, seguridad y visión","Control material o identificación con el poder","Administra tus recursos con visión de futuro","materia, recursos, cuerpo y construcción"]
+] as const;
 
-const rankEssence = [
-  "inicio y potencial de la energía",
-  "encuentro, equilibrio y primera relación",
-  "desarrollo, expresión y expansión inicial",
-  "estructura, pausa y necesidad de estabilidad",
-  "fricción, cambio y desafío",
-  "movimiento, equilibrio y recuperación de lo aprendido",
-  "evaluación, posición y defensa de lo que importa",
-  "movimiento, práctica y aceleración",
-  "madurez, resistencia y fruto de la experiencia",
-  "culminación, carga e integración del ciclo",
-  "aprendizaje, curiosidad y comienzo consciente",
-  "movimiento, iniciativa y expresión activa",
-  "madurez, presencia y dominio sensible",
-  "dominio, experiencia y capacidad de dirección"
-];
-
-const minors: Card[] = suitData.flatMap(suit =>
-  suit.names.map((name,i) => ({
-    id:String(suit.start+i).padStart(2,"0"),
-    name,
-    file:`${String(suit.start+i).padStart(2,"0")}-${suit.files[i]}.png`,
-    essence:`${rankEssence[i]}, en el ámbito de ${suit.area}`,
-    light:i===0?"abrir una posibilidad y darle espacio":i<10?"integrar la experiencia y actuar con conciencia":i===10?"explorar y aprender con apertura":i===11?"llevar la energía hacia una experiencia":i===12?"encarnar la cualidad del palo con autonomía":"dirigir recursos con visión y responsabilidad",
-    shadow:i<4?"no reconocer o no canalizar el potencial":i<10?"dispersar la energía o avanzar sin revisar":i===10?"inmadurez o falta de continuidad":i===11?"precipitación o dificultad para sostener el rumbo":i===12?"exceso de entrega o necesidad de demostrar":"rigidez, control o identificación excesiva con el poder"
-  }))
-);
+const minors: Card[] = minorRows.map(([id,name,file,essence,light,shadow,advice,keywords]) => ({
+  id,name,file,essence,light,shadow,advice,keywords
+}));
 
 const cards: Card[] = [...majors,...minors];
 // Las cartas se seleccionan y se renderizan desde deckOrder, sin un segundo estado de selección.
@@ -181,13 +211,6 @@ const categories: Category[] = [
   ]}
 ];
 
-const modes = [
-  ["Práctica","Qué puedes hacer con lo que muestra la tirada."],
-  ["Proceso","Cómo pasa la situación de una carta a la siguiente."],
-  ["Relacional","Qué relación aparece entre las cartas y las personas implicadas."],
-  ["Lectura profunda","Qué necesidad, tensión o aprendizaje puede haber en el fondo."]
-];
-
 export default function Home(){
   const shuffleCards = () => {
     const order = [...cards];
@@ -208,7 +231,6 @@ export default function Home(){
   // La mesa superior, las marcas de la baraja y la lectura nacen de este mismo estado.
   const [reading, setReading] = useState(false);
   const [started, setStarted] = useState(false);
-  const [mode, setMode] = useState(0);
 
   const makeDeck = () =>
     shuffleCards().map(card => ({...card, slot: undefined}));
@@ -242,6 +264,7 @@ export default function Home(){
   const selectedFilled = selected;
   const picked = selectedFilled;
   const [zoomCard, setZoomCard] = useState<Card | null>(null);
+  const [positionInput, setPositionInput] = useState("");
 
   function freshDeck(){
     return makeDeck();
@@ -251,16 +274,16 @@ export default function Home(){
     setDeckOrder(cards.map(card => ({...card, slot: undefined})));
     setReading(false);
     setStarted(false);
-    setMode(0);
     setZoomCard(null);
+    setPositionInput("");
   }
 
   function startReading(){
     setDeckOrder(makeDeck());
     setStarted(true);
     setReading(false);
-    setMode(0);
     setZoomCard(null);
+    setPositionInput("");
   }
 
   function selectCat(i:number){
@@ -272,8 +295,8 @@ export default function Home(){
     setDeckOrder(cards.map(card => ({...card, slot: undefined})));
     setReading(false);
     setStarted(false);
-    setMode(0);
     setZoomCard(null);
+    setPositionInput("");
   }
 
   // Este es el único mecanismo de selección.
@@ -312,6 +335,20 @@ export default function Home(){
     });
   }
 
+  function chooseByPosition(){
+    if(!started || reading) return;
+
+    const position = Number.parseInt(positionInput, 10);
+
+    if(!Number.isInteger(position) || position < 1 || position > 78) return;
+
+    const card = deckOrder[position - 1];
+    if(card){
+      choose(card);
+      setPositionInput("");
+    }
+  }
+
   function changeCardAt(index:number){
     if(reading) return;
 
@@ -335,8 +372,8 @@ export default function Home(){
     setDeckOrder(order);
     setStarted(true);
     setReading(false);
-    setMode(0);
     setZoomCard(null);
+    setPositionInput("");
   }
 
   function interpret(){
@@ -355,117 +392,105 @@ export default function Home(){
     return "Oros";
   }
 
-  function contextualReading(c:Card, i:number){
-    const position = current.positions[i];
-    const previous = selected[i-1];
-    const next = selected[i+1];
-    const isRelationship = cat === 0 || /relación|vínculo|nosotros|pareja|persona|amor/.test(effectiveQuestion.toLowerCase());
-    const modeName = modes[mode][0];
+  function cardMeaning(c:Card){
+    return `Por sí sola, ${c.name} habla de ${c.essence.toLowerCase()}.`;
+  }
 
-    if (modeName === "Práctica") {
-      return `En «${position}», ${c.name} te propone ${c.light}. Llévalo a una situación concreta: ¿qué podrías hacer, decir o decidir de una manera distinta esta semana?`;
+  function directAnswer(c:Card, i:number){
+    const position = current.positions[i];
+    const q = effectiveQuestion.toLowerCase();
+
+    if(position === "tendencia"){
+      return `En la tendencia, ${c.name} señala ${c.essence.toLowerCase()}. Si la dinámica actual continúa, puede expresarse como ${c.light.toLowerCase()}. No es un resultado cerrado: muestra una dirección posible.`;
     }
-    if (modeName === "Proceso") {
-      const start = previous ? `Después de ${previous.name},` : "Como punto de partida,";
-      const end = next ? ` Esta carta prepara el paso hacia ${next.name}.` : " Aquí termina el recorrido de la tirada.";
-      return `${start} ${c.name} muestra ${c.essence}. ${end} El movimiento que puedes explorar es ${c.light}.`;
+
+    if(position === "orientación"){
+      return `Como orientación para tu pregunta, ${c.name} te propone ${c.advice.toLowerCase()}.`;
     }
-    if (modeName === "Relacional") {
-      const other = previous ?? next;
-      if (isRelationship && i === 0) {
-        return `Tu lugar: ${c.name} pone el foco en ${c.essence}. Pregúntate qué necesitas tú y qué estás aportando al vínculo.`;
-      }
-      if (isRelationship && i === 1) {
-        return `La otra parte: ${c.name} invita a considerar ${c.essence}. Es una lectura simbólica, no una confirmación de lo que la otra persona piensa o siente; contrástalo con sus palabras y actos.`;
-      }
-      if (isRelationship) {
-        return `Lo que se crea entre ambos: ${c.name} señala ${c.essence}. Observa si esta dinámica se repite, se equilibra o está cambiando.`;
-      }
-      return `En relación con ${other?.name ?? "las demás cartas"}, ${c.name} añade ${c.essence}. Mira qué parte complementa y cuál pone en cuestión.`;
+
+    if(position === "clave"){
+      return `Como clave, ${c.name} concentra el mensaje en ${c.essence.toLowerCase()}. La acción que propone es clara: ${c.advice.toLowerCase()}.`;
     }
-    return `En «${position}», ${c.name} señala ${c.essence}. En palabras sencillas: revisa si en tu situación aparece ${c.light}. Si también reconoces ${c.shadow}, puede ser una pista para entender qué te está costando o qué necesita atención.`;
+
+    const relational = /amor|relación|vínculo|pareja|siente|persona/.test(q);
+
+    if(relational){
+      return `En «${position}», ${c.name} pone el foco en ${c.essence.toLowerCase()}. Mira cómo esta energía aparece realmente en el vínculo y qué diferencia hay entre lo que observas y lo que imaginas.`;
+    }
+
+    return `En «${position}», ${c.name} pone el foco en ${c.essence.toLowerCase()}. Para tu pregunta, observa dónde aparece ${c.light.toLowerCase()} y qué parte de ${c.shadow.toLowerCase()} necesita atención.`;
   }
 
   function synthesis(){
     if (!selected.length) return "Elige las cartas para construir tu lectura.";
+
     const first = selected[0];
     const last = selected[selected.length - 1];
     const names = selected.map(c => c.name).join(" → ");
     const questionText = effectiveQuestion.toLowerCase();
-    const isRelationship = cat === 0 || /relación|vínculo|nosotros|pareja|persona|amor/.test(questionText);
-    const recurringArea = [...new Set(selected.map(cardArea))]
-      .find(area => selected.filter(c => cardArea(c) === area).length > 1);
-    const focus = recurringArea
-      ? `Se repite el tema de ${recurringArea.toLowerCase()}.`
-      : `Las cartas conectan ${[...new Set(selected.map(cardArea))].join(", ").toLowerCase()}.`;
+    const relational = /relación|vínculo|pareja|amor|persona/.test(questionText);
 
-    if (isRelationship) {
-      return `La pregunta es «${effectiveQuestion}». ${first.name} sitúa tu punto de partida; ${last.name} muestra qué aspecto conviene mirar al final. ${focus} La lectura invita a separar lo que sientes, lo que observas en los hechos y lo que necesitas hablar con la otra persona.`;
+    if(relational){
+      return `Tu pregunta es «${effectiveQuestion}». La secuencia ${names} muestra distintas capas de la situación. ${first.name} abre el tema con ${first.essence.toLowerCase()} y ${last.name} lo lleva hacia ${last.essence.toLowerCase()}. La lectura simbólica te ayuda a distinguir lo que sientes, lo que observas y lo que necesitas hablar o decidir.`;
     }
-    return `Para «${effectiveQuestion}», la secuencia ${names} va de ${first.essence} hacia ${last.essence}. ${focus} La idea central es reconocer qué está pasando ahora y elegir un paso que dependa de ti, sin tomar la tendencia como un resultado inevitable.`;
+
+    return `Para «${effectiveQuestion}», la secuencia ${names} va de ${first.essence.toLowerCase()} hacia ${last.essence.toLowerCase()}. La lectura muestra el proceso que aparece ahora y qué puedes hacer con él, sin convertir la tendencia en un resultado inevitable.`;
   }
 
-  function narrative(){
-    if (!selected.length) return "Cuando elijas las cartas, aquí aparecerá la lectura conjunta.";
-    const first = selected[0];
-    const last = selected[selected.length-1];
-    const middle = selected.slice(1,-1);
-    const questionText = effectiveQuestion.toLowerCase();
-    const isRelationship = cat === 0 || /relación|vínculo|nosotros|pareja|persona|amor/.test(questionText);
-    const names = selected.map(c => c.name).join(" → ");
-    const bridge = middle.length
-      ? ` En medio, ${middle.map(c => `${c.name} aporta ${c.light}`).join("; ")}.`
-      : "";
+  function evolutionaryReading(){
+    if (!selected.length) return "Cuando elijas las cartas, aquí aparecerá la mirada evolutiva.";
 
-    if (modes[mode][0] === "Práctica") {
-      return `Tu consulta: «${effectiveQuestion}». La tirada reúne ${names}.${bridge} Lo más útil ahora es traducir ${first.light} en una acción pequeña y concreta, y revisar si te acerca a ${last.light}.`;
-    }
-    if (modes[mode][0] === "Proceso") {
-      return `La historia empieza con ${first.name}: ${first.essence}.${bridge} El recorrido llega a ${last.name}, que pone sobre la mesa ${last.essence}. En conjunto, el cambio posible va de ${first.light} a ${last.light}; cada paso dependerá de lo que elijas y de lo que ocurra.`;
-    }
-    if (modes[mode][0] === "Relacional") {
-      if (isRelationship) {
-        return `Ante «${effectiveQuestion}», ${names} dibujan distintas partes del vínculo. ${first.name} ayuda a mirar tu posición; ${last.name} señala qué dinámica merece atención al final.${bridge} La lectura no puede confirmar lo que otra persona siente o hará: te ayuda a distinguir tus necesidades, los hechos que observas y la conversación pendiente.`;
-      }
-      return `Ante «${effectiveQuestion}», ${names} se complementan y se matizan.${bridge} La relación entre ellas muestra qué aspecto sostiene la situación y cuál pide revisión. Mira cómo se conectan en tu vida concreta, en lugar de tomar cada carta como un mensaje aislado.`;
-    }
-    return `Ante «${effectiveQuestion}», ${first.name} abre la lectura con ${first.essence}, y ${last.name} la lleva hacia ${last.essence}.${bridge} En el fondo, puede haber una tensión entre ${first.light} y ${last.shadow}. La pregunta importante es qué necesidad aparece en esa tensión y qué parte puedes atender hoy. Es una interpretación simbólica para reflexionar, no una predicción cerrada.`;
+    const lessons = selected.map(c => c.advice.toLowerCase());
+    return `Desde una mirada evolutiva, la tirada te invita a comprender esta secuencia: ${lessons.join(" · ")}. El aprendizaje está en reconocer qué te muestra cada carta y qué puedes transformar conscientemente en tu manera de actuar.`;
+  }
+
+  function spreadReading(){
+    if (!selected.length) return "Elige las cartas para obtener la interpretación de la tirada.";
+
+    const pieces = selected.map((c,i) =>
+      `${current.positions[i]}: ${c.name} aporta ${c.essence.toLowerCase()}`
+    );
+
+    return `La interpretación conjunta conecta ${pieces.join("; ")}. Las cartas no se leen como frases aisladas: la posición modifica su sentido y la pregunta da dirección a todo el conjunto.`;
   }
 
   function practicalKey(){
     const lead = selected[0];
     const end = selected[selected.length-1];
+
     if (!lead || !end) return "Elige las cartas para obtener una clave práctica.";
-    return `Quédate con esto: empieza por ${lead.light} y da un paso hacia ${end.light}. Elige una acción concreta que dependa de ti y observa qué cambia.`;
+
+    return `Quédate con esto: ${lead.advice}. Después, observa qué te pide ${end.name} y conviértelo en un paso concreto que dependa de ti.`;
   }
 
   function shareText(){
     const origin = typeof window !== "undefined" ? window.location.origin : "";
+
     const lines = [
       "Tarot AO · Anna Oriol",
       `Pregunta: ${effectiveQuestion}`,
       `Tirada: ${current.name} — ${current.positions.join(" / ")}`,
-      `Modalidad: ${modes[mode][0]}`,
       "",
-      "CARTAS E IMÁGENES",
+      "CARTAS",
       ...selected.map((card, i) =>
-        `${i+1}. ${current.positions[i]}: ${card.name}\n${origin}/cards/${encodeURIComponent(card.file)}`
+        `${i+1}. ${current.positions[i]}: ${card.name}\nSignificado: ${card.essence}\nLuz: ${card.light}\nSombra: ${card.shadow}\nConsejo: ${card.advice}\n${origin}/cards/${encodeURIComponent(card.file)}`
       ),
       "",
-      "IDEA CENTRAL",
+      "RESPUESTA A TU PREGUNTA",
       synthesis(),
       "",
-      "LECTURA CARTA A CARTA",
-      ...selected.map((card, i) => `${i+1}. ${current.positions[i]} · ${card.name}\n${contextualReading(card, i)}`),
+      "INTERPRETACIÓN DE LA TIRADA",
+      spreadReading(),
       "",
-      `LECTURA CONJUNTA · ${modes[mode][0].toUpperCase()}`,
-      narrative(),
+      "MIRADA EVOLUTIVA",
+      evolutionaryReading(),
       "",
       "CLAVE PARA LLEVARLO A TU VIDA",
       practicalKey(),
       "",
       "Lectura simbólica para la reflexión personal."
     ];
+
     return lines.join("\n");
   }
 
@@ -597,7 +622,7 @@ export default function Home(){
               {card ? (
                 <>
                   <CardImage card={card} alt={card.name}/>
-                  <span className="zoomHint" aria-hidden="true">⌕</span>
+                  
                 </>
               ) : (
                 <div className="emptyBack"><i>✦</i></div>
@@ -614,6 +639,57 @@ export default function Home(){
         <div><h2>{started ? "Elige tus cartas." : "Contempla la baraja."}</h2><p>{started ? "Toca una carta para incorporarla a la tirada y construir tu lectura." : "Las 78 cartas se muestran de cara. Cuando pulses Iniciar tirada, se mezclarán y podrás elegir."}</p></div>
         <div className="counter"><b>{picked.length}</b><span>/ {count}</span></div>
       </div>
+        {started && (
+          <div
+            className="positionPicker"
+            style={{
+              display:"flex",
+              flexWrap:"wrap",
+              alignItems:"center",
+              gap:"10px",
+              margin:"18px 0 8px"
+            }}
+          >
+            <label htmlFor="positionInput" style={{fontWeight:700}}>
+              Elegir por posición
+            </label>
+
+            <input
+              id="positionInput"
+              type="number"
+              min="1"
+              max="78"
+              inputMode="numeric"
+              value={positionInput}
+              onChange={e=>setPositionInput(e.target.value)}
+              onKeyDown={e=>{if(e.key === "Enter") chooseByPosition();}}
+              placeholder="1–78"
+              aria-label="Número de posición de la carta"
+              style={{
+                width:"88px",
+                padding:"10px 12px",
+                border:"1px solid currentColor",
+                borderRadius:"8px",
+                background:"transparent",
+                fontSize:"16px"
+              }}
+            />
+
+            <button
+              className="secondary"
+              type="button"
+              onClick={chooseByPosition}
+              disabled={!positionInput || picked.length >= count}
+            >
+              Elegir carta
+            </button>
+
+            <span style={{opacity:0.7,fontSize:"0.9rem"}}>
+              Es la posición actual de la carta después de barajar.
+            </span>
+          </div>
+        )}
+
         <div className="actions actionsCentered">
           {!started && <button className="primary" type="button" onClick={startReading}>Iniciar tirada</button>}
           <button className="secondary shuffleButton" onClick={startReading}>Mezclar</button>
@@ -635,8 +711,8 @@ export default function Home(){
               type="button"
               onClick={() => started && choose(c)}
               disabled={!started}
-              aria-label={!started ? c.name : isPicked ? `${c.name}, posición ${pickNumber + 1}` : "Carta boca abajo"}
-              title={!started ? c.name : isPicked ? `Seleccionada · posición ${pickNumber + 1}` : "Toca para elegir esta carta"}
+              aria-label={!started ? c.name : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
+              title={!started ? c.name : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Elegir posición ${deckOrder.indexOf(c) + 1}`}
             >
               {!started ? (
                 <span className="preStartFace">
@@ -656,6 +732,28 @@ export default function Home(){
                   <span className="cardFace cardFaceFront">
                     <CardImage card={c} alt={c.name}/>
                   </span>
+                </span>
+              )}
+              {started && (
+                <span
+                  className="positionMark"
+                  style={{
+                    position:"absolute",
+                    top:"6px",
+                    left:"6px",
+                    zIndex:5,
+                    minWidth:"22px",
+                    padding:"3px 5px",
+                    borderRadius:"999px",
+                    background:"rgba(255,255,255,.86)",
+                    color:"#222",
+                    fontSize:"11px",
+                    lineHeight:1,
+                    textAlign:"center",
+                    pointerEvents:"none"
+                  }}
+                >
+                  {deckOrder.indexOf(c) + 1}
                 </span>
               )}
               {isPicked && <span className="pickedMark">{pickNumber + 1}</span>}
@@ -685,19 +783,25 @@ export default function Home(){
           <div className="positionNumber">{String(i+1).padStart(2,"0")}</div>
           <button className="readingCardThumb" type="button" onClick={() => setZoomCard(c)} aria-label={`Ampliar ${c.name}`}>
             <CardImage card={c} alt={c.name}/>
-            <span className="zoomHint" aria-hidden="true">⌕</span>
+            
           </button>
           <div className="positionInfo"><span>{current.positions[i]}</span><h3>{c.name}</h3><small>{cardArea(c)}</small></div>
-          <div className="positionText"><p>{contextualReading(c,i)}</p></div>
+          <div className="positionText"><p>{directAnswer(c,i)}</p></div>
         </article> : null)}
       </div>
+        <div className="expertCard mainSynthesis unifiedStory">
+          <div className="label">Interpretación de la tirada</div>
+          <p>{spreadReading()}</p>
 
-      <div className="readingModes">
-        {modes.map((m,i)=><button className={mode===i ? "mode active" : "mode"} onClick={()=>setMode(i)} key={m[0]}><b>{m[0]}</b><span>{m[1]}</span></button>)}
-      </div>
+          <div style={{marginTop:"20px"}}>
+            <div className="label">Mirada evolutiva</div>
+            <p>{evolutionaryReading()}</p>
+          </div>
 
-      <div className="expertCard mainSynthesis unifiedStory">
-        <div className="label">Tu lectura · {modes[mode][0]}</div>
+          <p className="storyConclusion">
+            <strong>La clave para ti:</strong> {practicalKey()}
+          </p>
+        </div>
         <p>{narrative()}</p>
         <p className="storyConclusion"><strong>La clave para ti:</strong> {practicalKey()}</p>
       </div>
@@ -717,11 +821,73 @@ export default function Home(){
     </section>}
 
     {zoomCard && (
-      <div className="cardZoomOverlay" role="dialog" aria-modal="true" aria-label={`Carta ${zoomCard.name}`} onClick={() => setZoomCard(null)}>
+      <div
+        className="cardZoomOverlay"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Carta ${zoomCard.name}`}
+        onClick={() => setZoomCard(null)}
+      >
         <div className="cardZoomPanel" onClick={e => e.stopPropagation()}>
-          <button className="cardZoomClose" type="button" onClick={() => setZoomCard(null)} aria-label="Cerrar">×</button>
-          <CardImage card={zoomCard} alt={zoomCard.name}/>
-          <div className="zoomCaption">{zoomCard.name}</div>
+          <button
+            className="cardZoomClose"
+            type="button"
+            onClick={() => setZoomCard(null)}
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+          <div
+            style={{
+              display:"grid",
+              gridTemplateColumns:"minmax(130px,35%) minmax(0,1fr)",
+              gap:"28px",
+              alignItems:"start",
+              padding:"8px"
+            }}
+          >
+            <div style={{minWidth:0}}>
+              <CardImage card={zoomCard} alt={zoomCard.name}/>
+            </div>
+
+            <div style={{minWidth:0}}>
+              <div className="label">Significado de la carta</div>
+              <h2 style={{marginTop:"6px"}}>{zoomCard.name}</h2>
+
+              <p>
+                <strong>Significado general.</strong>{" "}
+                {cardMeaning(zoomCard)}
+              </p>
+
+              <div style={{
+                display:"grid",
+                gap:"14px",
+                marginTop:"18px"
+              }}>
+                <div>
+                  <strong>LUZ</strong>
+                  <p>{zoomCard.light}</p>
+                </div>
+
+                <div>
+                  <strong>SOMBRA</strong>
+                  <p>{zoomCard.shadow}</p>
+                </div>
+
+                <div>
+                  <strong>CONSEJO</strong>
+                  <p>{zoomCard.advice}</p>
+                </div>
+              </div>
+
+              {zoomCard.keywords && (
+                <p style={{opacity:0.72,marginTop:"18px"}}>
+                  <strong>Ámbito:</strong> {zoomCard.keywords}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     )}

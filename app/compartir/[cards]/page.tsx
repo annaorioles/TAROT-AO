@@ -150,29 +150,50 @@ export default async function SharedReading({params,searchParams}:{params:Promis
   const evolution=evolutionaryReading(selected);
   const key=practicalKey(selected);
   return <main style={{minHeight:"100vh",background:"#edf6f7",color:"#1b4652",fontFamily:"Arial,sans-serif",padding:"38px 5.5vw 70px"}}>
-    <div style={{maxWidth:1400,margin:"0 auto"}}>
+    <style>
+    .shared-shell{box-sizing:border-box;width:100%;max-width:100%;overflow-x:hidden;}
+    .shared-header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
+    .shared-card-row{display:grid;grid-template-columns:48px 160px 220px minmax(0,1fr);gap:20px;align-items:center;padding:26px 0;border-bottom:1px solid #c8e0e4}
+    .shared-card-answer{grid-column:auto;min-width:0;overflow-wrap:anywhere}
+    @media (max-width:700px){
+      .shared-shell{padding:22px 16px 50px!important}
+      .shared-header{display:block;margin-bottom:22px}
+      .shared-header h1{font-size:42px!important}
+      .shared-header p{font-size:17px!important;line-height:1.5}
+      .shared-badge{display:inline-block;margin-top:16px}
+      .shared-central{padding:20px!important;border-radius:16px!important}
+      .shared-central p{font-size:17px!important;line-height:1.65!important}
+      .shared-card-row{grid-template-columns:34px 92px minmax(0,1fr);gap:12px;padding:20px 0;align-items:start}
+      .shared-card-row img{width:92px!important;height:138px!important}
+      .shared-card-title{font-size:22px!important}
+      .shared-card-answer{grid-column:2 / -1;font-size:16px!important;line-height:1.65!important;margin-top:4px!important}
+      .shared-reading{padding:20px!important;border-radius:16px!important}
+      .shared-reading p{font-size:16px!important;line-height:1.7!important}
+    }
+</style>
+    <div className="shared-shell" style={{maxWidth:1400,margin:"0 auto"}}>
       <div style={{fontSize:13,letterSpacing:".14em",fontWeight:700,color:"#0f7288",marginBottom:14}}>04 · LA REVELACIÓN</div>
-      <header style={{display:"flex",justifyContent:"space-between",alignItems:"end",gap:24,marginBottom:28}}>
+      <header className="shared-header">
         <div><h1 style={{fontSize:"clamp(40px,6vw,72px)",lineHeight:1.02,margin:"0 0 14px",color:"#173f4b"}}>Ahora mira la historia.</h1><p style={{fontSize:20,color:"#08758c",margin:0}}>“{question}”</p></div>
-        <div style={{padding:"10px 18px",borderRadius:24,background:"#d9eef1",fontWeight:700,fontSize:13,whiteSpace:"nowrap"}}>Lectura {spreadCount} cartas</div>
+        <div className="shared-badge" style={{padding:"10px 18px",borderRadius:24,background:"#d9eef1",fontWeight:700,fontSize:13,whiteSpace:"nowrap"}}>Lectura {spreadCount} cartas</div>
       </header>
 
-      <section style={{background:"rgba(255,255,255,.52)",border:"1px solid #c8e0e4",borderRadius:22,padding:"28px 30px",marginBottom:34}}>
+      <section className="shared-central" style={{background:"rgba(255,255,255,.52)",border:"1px solid #c8e0e4",borderRadius:22,padding:"28px 30px",marginBottom:34}}>
         <div style={{fontSize:12,letterSpacing:".16em",fontWeight:700,color:"#71939c",marginBottom:14}}>LA IDEA CENTRAL DE TU CONSULTA</div>
         <p style={{fontSize:20,lineHeight:1.8,margin:0,color:"#587b84"}}>{central}</p>
       </section>
 
       <div style={{fontSize:12,letterSpacing:".16em",fontWeight:700,color:"#71939c",paddingBottom:14,borderBottom:"1px solid #c8e0e4",marginBottom:0}}>LECTURA CARTA A CARTA</div>
       <section>
-        {selected.map((c:any,i:number)=><article key={c.name+String(i)} style={{display:"grid",gridTemplateColumns:"48px 160px 220px minmax(0,1fr)",gap:20,alignItems:"center",padding:"26px 0",borderBottom:"1px solid #c8e0e4"}}>
+        {selected.map((c:any,i:number)=><article className="shared-card-row" key={c.name+String(i)}>
           <div style={{fontSize:13,fontWeight:700,color:"#0f7288"}}>{String(i+1).padStart(2,"0")}</div>
           <img src={`/cards/${c.file}`} alt={c.name} style={{width:160,height:240,objectFit:"cover",borderRadius:14,display:"block"}} />
-          <div><div style={{fontSize:11,letterSpacing:".15em",color:"#78949b",marginBottom:8}}>{positions[i]||"carta"}</div><h2 style={{fontSize:27,margin:"0 0 8px",color:"#173f4b"}}>{c.name}</h2><div style={{fontSize:13,color:"#08758c"}}>{Number(c.id)<22?"Arcano Mayor":Number(c.id)<36?"Copas":Number(c.id)<50?"Espadas":Number(c.id)<64?"Bastos":"Oros"}</div></div>
-          <p style={{fontSize:19,lineHeight:1.75,color:"#587b84",margin:0}}>{directAnswer(c,i,positions,question)}</p>
+          <div><div style={{fontSize:11,letterSpacing:".15em",color:"#78949b",marginBottom:8}}>{positions[i]||"carta"}</div><h2 className="shared-card-title" style={{fontSize:27,margin:"0 0 8px",color:"#173f4b"}}>{c.name}</h2><div style={{fontSize:13,color:"#08758c"}}>{Number(c.id)<22?"Arcano Mayor":Number(c.id)<36?"Copas":Number(c.id)<50?"Espadas":Number(c.id)<64?"Bastos":"Oros"}</div></div>
+          <p className="shared-card-answer" style={{fontSize:19,lineHeight:1.75,color:"#587b84",margin:0}}>{directAnswer(c,i,positions,question)}</p>
         </article>)}
       </section>
 
-      <section style={{background:"#dff1f3",border:"1px solid #c1dfe4",borderRadius:22,padding:"30px",marginTop:32}}>
+      <section className="shared-reading" style={{background:"#dff1f3",border:"1px solid #c1dfe4",borderRadius:22,padding:"30px",marginTop:32}}>
         <div style={{fontSize:12,letterSpacing:".16em",fontWeight:700,color:"#71939c",marginBottom:14}}>INTERPRETACIÓN DE LA TIRADA</div>
         <p style={{fontSize:19,lineHeight:1.8,color:"#587b84",margin:"0 0 24px"}}>{interpretation}</p>
         <div style={{fontSize:12,letterSpacing:".16em",fontWeight:700,color:"#71939c",marginBottom:14}}>MIRADA EVOLUTIVA</div>

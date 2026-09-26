@@ -914,17 +914,27 @@ export default function Home(){
                   </span>
                   {isPicked ? (
                     <span
-                      className="cardFace cardFaceFront"
                       style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "block",
+                        width: "100%",
+                        height: "100%",
                         transform: "none",
                         opacity: 1,
                         visibility: "visible",
                         backfaceVisibility: "visible",
                         WebkitBackfaceVisibility: "visible",
-                        zIndex: 4,
+                        zIndex: 10,
+                        overflow: "hidden",
+                        borderRadius: "inherit",
                       }}
                     >
-                      <CardImage card={c} alt={c.name}/>
+                      <CardImage
+                        card={c}
+                        alt={c.name}
+                        className="selectedDeckCardImage"
+                      />
                     </span>
                   ) : (
                     <span className="cardFace cardFaceBack">

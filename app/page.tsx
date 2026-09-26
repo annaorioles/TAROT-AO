@@ -161,13 +161,14 @@ function imageSources(card: Card){
   return [...new Set(sources)];
 }
 
-function CardImage({card, className, alt}:{card:Card; className?:string; alt:string}){
+function CardImage({card, className, alt, style}:{card:Card; className?:string; alt:string; style?:React.CSSProperties}){
   const sources = imageSources(card);
   const [sourceIndex, setSourceIndex] = useState(0);
 
   return (
     <img
       className={className}
+      style={style}
       src={sources[sourceIndex]}
       alt={alt}
       onError={() => {
@@ -886,67 +887,46 @@ export default function Home(){
                 <span className="preStartFace">
                   <CardImage card={c} alt={c.name}/>
                 </span>
+              ) : isPicked ? (
+                <span
+                  aria-label={`${c.name}, carta seleccionada`}
+                  style={{
+                    position:"absolute",
+                    inset:0,
+                    display:"block",
+                    width:"100%",
+                    height:"100%",
+                    zIndex:10,
+                    overflow:"hidden",
+                    borderRadius:"inherit",
+                    transform:"none",
+                    opacity:1,
+                    visibility:"visible",
+                  }}
+                >
+                  <CardImage
+                    card={c}
+                    alt={c.name}
+                    style={{
+                      display:"block",
+                      width:"100%",
+                      height:"100%",
+                      objectFit:"cover",
+                      objectPosition:"center",
+                    }}
+                  />
+                </span>
               ) : (
                 <span className="tarotFlip" style={{position:"relative"}}>
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      position:"absolute",
-                      zIndex:5,
-                      top:"8px",
-                      left:"8px",
-                      minWidth:"26px",
-                      height:"26px",
-                      padding:"0 6px",
-                      borderRadius:"999px",
-                      display:"flex",
-                      alignItems:"center",
-                      justifyContent:"center",
-                      fontSize:"12px",
-                      fontWeight:800,
-                      lineHeight:1,
-                      background:"rgba(255,255,255,.92)",
-                      color:"#111",
-                      boxSizing:"border-box"
-                    }}
-                  >
-                    {deckOrder.indexOf(c) + 1}
+                  <span className="cardFace cardFaceBack">
+                    <span className="backFrame backFrameOuter"></span>
+                    <span className="backFrame backFrameInner"></span>
+                    <span className="backGarland backGarlandLeft"></span>
+                    <span className="backGarland backGarlandRight"></span>
+                    <span className="backMedallion">
+                      <span className="backStar">✦</span>
+                    </span>
                   </span>
-                  {isPicked ? (
-                    <span
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "block",
-                        width: "100%",
-                        height: "100%",
-                        transform: "none",
-                        opacity: 1,
-                        visibility: "visible",
-                        backfaceVisibility: "visible",
-                        WebkitBackfaceVisibility: "visible",
-                        zIndex: 10,
-                        overflow: "hidden",
-                        borderRadius: "inherit",
-                      }}
-                    >
-                      <CardImage
-                        card={c}
-                        alt={c.name}
-                        className="selectedDeckCardImage"
-                      />
-                    </span>
-                  ) : (
-                    <span className="cardFace cardFaceBack">
-                      <span className="backFrame backFrameOuter"></span>
-                      <span className="backFrame backFrameInner"></span>
-                      <span className="backGarland backGarlandLeft"></span>
-                      <span className="backGarland backGarlandRight"></span>
-                      <span className="backMedallion">
-                        <span className="backStar">✦</span>
-                      </span>
-                    </span>
-                  )}
                 </span>
               )}
               {started && (

@@ -5,9 +5,10 @@ export const alt = "Tirada compartida de Tarot AO";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tarot-ao-new.vercel.app";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://tarot-ao-new.vercel.app";
 
-const CARDS: Record<string, {name: string; file: string}> = {
+const CARD_NAMES: Record<string, { name: string; file: string }> = {
   "00": { name: "El Loco", file: "00-el-loco.png" },
   "01": { name: "El Mago", file: "01-el-mago.png" },
   "02": { name: "La Sacerdotisa", file: "02-la-sacerdotisa.png" },
@@ -85,39 +86,139 @@ const CARDS: Record<string, {name: string; file: string}> = {
   "74": { name: "Sota de Oros", file: "74-sota-de-oros.png" },
   "75": { name: "Caballero de Oros", file: "75-caballero-de-oros.png" },
   "76": { name: "Reina de Oros", file: "76-reina-de-oros.png" },
-  "77": { name: "Rey de Oros", file: "77-rey-de-oros.png" }
+  "77": { name: "Rey de Oros", file: "77-rey-de-oros.png" },
 };
 
-export default async function Image({params, searchParams}: {params: Promise<{cards: string}>; searchParams: Promise<{q?: string}>}) {
-  const {cards} = await params;
-  const {q} = await searchParams;
-  const selected = cards.split("-").map(id => CARDS[id]).filter(Boolean).slice(0, 7);
-  const imageUrls = selected.map(card => `${SITE_URL}/cards/${card.file}`);
+export default async function Image({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ cards: string }>;
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { cards } = await params;
+  const { q } = await searchParams;
+
+  const selected = cards
+    .split("-")
+    .map((id) => CARD_NAMES[id])
+    .filter(Boolean)
+    .slice(0, 7);
+
   const question = q || "Mi tirada de Tarot AO";
 
+  const cardWidth = selected.length <= 3 ? 150 : 112;
+  const cardHeight = selected.length <= 3 ? 225 : 168;
+
   return new ImageResponse(
-    <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",background:"#f4f0e8",color:"#24201b",fontFamily:"Arial",padding:"34px 42px",boxSizing:"border-box"}}>
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:28,marginBottom:22}}>
-        <div style={{display:"flex",flexDirection:"column",width:"31%",paddingTop:4}}>
-          <div style={{fontSize:20,fontWeight:700,letterSpacing:"0.14em",color:"#6b6258"}}>TAROT AO · ANNA ORIOL</div>
-          <div style={{fontSize:48,fontWeight:800,lineHeight:1.02,marginTop:10}}>Mi tirada</div>
-          <div style={{fontSize:20,lineHeight:1.28,marginTop:14}}>{question.slice(0, 150)}</div>
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          background: "#edf6f7",
+          color: "#173f4b",
+          padding: "42px 54px",
+          fontFamily: "Arial",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            fontSize: 18,
+            letterSpacing: "0.18em",
+            fontWeight: 700,
+            color: "#0f7288",
+            marginBottom: 14,
+          }}
+        >
+          TAROT AO · ANNA ORIOL
         </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:10,width:"69%",paddingTop:4}}>
-          {selected.map((card,index)=>(
-            <div key={card.file} style={{display:"flex",flexDirection:"column",alignItems:"center",width: selected.length >= 6 ? 104 : selected.length >= 4 ? 128 : 160}}>
-              <div style={{display:"flex",background:"white",padding:6,borderRadius:12,boxShadow:"0 6px 18px rgba(0,0,0,.12)"}}>
-                <img src={`${SITE_URL}/cards/${card.file}`} width={selected.length >= 6 ? 104 : selected.length >= 4 ? 128 : 160} height={selected.length >= 6 ? 166 : selected.length >= 4 ? 202 : 252} style={{objectFit:"cover",borderRadius:8}} />
+
+        <div
+          style={{
+            display: "flex",
+            fontSize: 34,
+            fontWeight: 700,
+            marginBottom: 10,
+          }}
+        >
+          Mi tirada
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            fontSize: 20,
+            color: "#587b84",
+            maxWidth: 1040,
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+            marginBottom: 28,
+          }}
+        >
+          {question}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: selected.length <= 3 ? 34 : 18,
+            alignItems: "flex-start",
+            flex: 1,
+          }}
+        >
+          {selected.map((card) => (
+            <div
+              key={card.file}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src={`${SITE_URL}/cards/${card.file}`}
+                width={cardWidth}
+                height={cardHeight}
+                style={{
+                  objectFit: "cover",
+                  borderRadius: 12,
+                  border: "1px solid #c8e0e4",
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  marginTop: 9,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "#173f4b",
+                  maxWidth: cardWidth,
+                  textAlign: "center",
+                }}
+              >
+                {card.name}
               </div>
-              <div style={{fontSize:selected.length >= 6 ? 11 : 13,fontWeight:700,marginTop:7,textAlign:"center"}}>{card.name}</div>
             </div>
           ))}
         </div>
+
+        <div
+          style={{
+            display: "flex",
+            fontSize: 15,
+            color: "#78949b",
+            marginTop: 12,
+          }}
+        >
+          Lectura simbólica para la reflexión personal · Ver lectura completa
+        </div>
       </div>
-      <div style={{display:"flex",marginTop:"auto",paddingTop:16,borderTop:"1px solid rgba(36,32,27,.16)",fontSize:18,color:"#5f574f"}}>
-        <div style={{display:"flex",fontWeight:700}}>Abre la lectura completa en Tarot AO · carta, interpretación y mirada evolutiva</div>
-      </div>
-    </div>,
+    ),
     { ...size }
   );
 }

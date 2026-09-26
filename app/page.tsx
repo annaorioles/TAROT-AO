@@ -874,22 +874,11 @@ export default function Home(){
           const isPicked = pickNumber !== -1;
           return (
             <button
-              className={`${isPicked ? "tarot picked" : "tarot"} ${!started ? "preStart" : ""}`}
+              className={isPicked ? "tarot picked" : "tarot"}
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
-              onPointerDown={(event) => {
-                if (!started) {
-                  event.preventDefault();
-                  setZoomCard(c);
-                }
-              }}
-              onClick={() => {
-                if (!started) {
-                  setZoomCard(c);
-                } else if (selectionMode === "card") {
-                  choose(c);
-                }
-              }}
+              style={{cursor:"pointer", pointerEvents:"auto", position:"relative", zIndex:1}}
+              onClick={(e) => { e.stopPropagation(); if (!started) { setZoomCard(c); } else if (selectionMode === "card") { choose(c); } }}
               disabled={false}
               aria-label={!started ? c.name : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
               title={!started ? c.name : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Posición ${deckOrder.indexOf(c) + 1}`}
@@ -1023,7 +1012,7 @@ export default function Home(){
 
     {showMemories && (
       <div className="cardZoomOverlay" role="dialog" aria-modal="true" aria-label="Mis lecturas" onClick={() => setShowMemories(false)}>
-        <div className="cardZoomPanel" onClick={e => e.stopPropagation()}>
+        <div className="cardZoomPanel" onClick={e => e.stopPropagation()} style={{position:"relative", width:"min(900px,100%)", maxHeight:"calc(100vh - 40px)", overflowY:"auto", boxSizing:"border-box", background:"#f7f3eb", color:"#24201b", borderRadius:"22px", padding:"28px", boxShadow:"0 25px 80px rgba(0,0,0,.35)"}}>
           <button className="cardZoomClose" type="button" onClick={() => setShowMemories(false)} aria-label="Cerrar">×</button>
           <div style={{padding:"8px"}}>
             <div className="label">HISTORIAL</div>
@@ -1057,6 +1046,7 @@ export default function Home(){
         aria-modal="true"
         aria-label={`Carta ${zoomCard.name}`}
         onClick={() => setZoomCard(null)}
+        style={{position:"fixed", inset:0, zIndex:99999, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px", boxSizing:"border-box", background:"rgba(20,18,15,.78)", overflowY:"auto"}}
       >
         <div className="cardZoomPanel" onClick={e => e.stopPropagation()}>
           <button
@@ -1078,7 +1068,7 @@ export default function Home(){
             }}
           >
             <div style={{minWidth:0}}>
-              <CardImage card={zoomCard} alt={zoomCard.name}/>
+              <div style={{maxWidth:"320px", margin:"0 auto"}}><CardImage card={zoomCard} alt={zoomCard.name}/></div>
             </div>
 
             <div style={{minWidth:0}}>

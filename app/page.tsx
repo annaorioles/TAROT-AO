@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type Card = {
   id: string;
@@ -22,6 +22,16 @@ type Spread = {
 };
 
 type SelectionMode = "card" | "position";
+
+type SavedReading = {
+  id: string;
+  createdAt: string;
+  question: string;
+  spreadName: string;
+  positions: string[];
+  cards: { id: string; name: string; file: string }[];
+  interpretation: { synthesis: string; spread: string; evolutionary: string; practical: string };
+};
 
 type Category = {
   name: string;
@@ -269,6 +279,76 @@ export default function Home(){
   const [positionInput, setPositionInput] = useState("");
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("card");
   const [selectionNotice, setSelectionNotice] = useState("");
+  const [savedReadings, setSavedReadings] = useState<SavedReading[]>([]);
+  const [showMemories, setShowMemories] = useState(false);
+  const [activeSavedId, setActiveSavedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("tarot-ao-readings-v1");
+      if (raw) setSavedReadings(JSON.parse(raw));
+    } catch {
+      // La lectura sigue funcionando aunque el almacenamiento local no esté disponible.
+    }
+  }, []);
+
+  function persistReadings(next: SavedReading[]) {
+    setSavedReadings(next);
+    try {
+      window.localStorage.setItem("tarot-ao-readings-v1", JSON.stringify(next.slice(0, 50)));
+    } catch {
+      // No bloqueamos la lectura por un problema de almacenamiento.
+    }
+  }
+
+  function saveCurrentReading() {
+    if (!selected.length) return;
+    const id = `${Date.now()}-${selected.map(c => c.id).join("-")}`;
+    const item: SavedReading = {
+      id,
+      createdAt: new Date().toISOString(),
+      question: effectiveQuestion,
+      spreadName: current.name,
+      positions: current.positions,
+      cards: selected.map(c => ({id:c.id,name:c.name,file:c.file})),
+      interpretation: {
+        synthesis: synthesis(),
+        spread: spreadReading(),
+        evolutionary: evolutionaryReading(),
+        practical: practicalKey()
+      }
+    };
+    persistReadings([item, ...savedReadings.filter(r => r.id !== activeSavedId)]);
+    setActiveSavedId(id);
+    setSelectionNotice("Lectura guardada en Mis lecturas.");
+  }
+
+  function loadSavedReading(item: SavedReading) {
+    const byId = new Map(cards.map(c => [c.id, c]));
+    const restored = item.cards.map((saved, i) => {
+      const card = byId.get(saved.id);
+      return card ? {...card, slot:i+1} : null;
+    }).filter(Boolean) as Card[];
+    if (!restored.length) return;
+    const restoredIds = new Set(restored.map(c => c.id));
+    setDeckOrder(cards.map(c => restoredIds.has(c.id) ? (restored.find(r => r.id === c.id) as Card) : {...c, slot:undefined}));
+    setReading(true);
+    setStarted(true);
+    setSelectionMode("card");
+    setZoomCard(null);
+    setActiveSavedId(item.id);
+    setShowMemories(false);
+    setQuestion(item.question);
+    setCustomQuestion(item.question);
+    const spreadId = Number(item.spreadName.split(" ")[0]);
+    if ([1,2,3,5,7].includes(spreadId)) setSpread(spreadId);
+    requestAnimationFrame(() => document.getElementById("lectura")?.scrollIntoView({behavior:"smooth", block:"start"}));
+  }
+
+  function removeSavedReading(id:string) {
+    persistReadings(savedReadings.filter(r => r.id !== id));
+    if (activeSavedId === id) setActiveSavedId(null);
+  }
 
   function freshDeck(){
     return makeDeck();
@@ -488,13 +568,22 @@ export default function Home(){
     return `Quédate con esto: ${lead.advice}. Después, observa qué te pide ${end.name} y conviértelo en un paso concreto que dependa de ti.`;
   }
 
+  function shareUrl(){
+    if (typeof window === "undefined") return "";
+    const ids = selected.map(c => c.id).join("-");
+    return `${window.location.origin}/compartir/${ids}?q=${encodeURIComponent(effectiveQuestion)}`;
+  }
+
   function shareText(){
     const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const url = shareUrl();
 
     const lines = [
       "Tarot AO · Anna Oriol",
       `Pregunta: ${effectiveQuestion}`,
       `Tirada: ${current.name} — ${current.positions.join(" / ")}`,
+      "",
+      `Ver la tirada: ${url}`,
       "",
       "CARTAS",
       ...selected.map((card, i) =>
@@ -521,15 +610,35 @@ export default function Home(){
 
   async function shareReading(){
     const text = shareText();
+    const files: File[] = [];
+
+    if (typeof window !== "undefined" && typeof File !== "undefined") {
+      for (const card of selected) {
+        try {
+          const response = await fetch(`/cards/${card.file}`);
+          if (!response.ok) continue;
+          const blob = await response.blob();
+          files.push(new File([blob], card.file, {type: blob.type || "image/png"}));
+        } catch {
+          // Si una imagen no puede adjuntarse, seguimos con el enlace de la lectura.
+        }
+      }
+    }
+
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({title:"Tarot AO · Mi tirada", text});
+        if (files.length && navigator.canShare?.({files})) {
+          await navigator.share({title:"Tarot AO · Mi tirada", text, url:shareUrl(), files});
+        } else {
+          await navigator.share({title:"Tarot AO · Mi tirada", text, url:shareUrl()});
+        }
         return;
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
       }
     }
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${shareUrl()}`)}`, "_blank", "noopener,noreferrer");
   }
 
   return <main className="appShell">
@@ -542,6 +651,7 @@ export default function Home(){
         </span>
       </a>
       <div className="headerRight">
+        <button className="secondary" type="button" onClick={() => setShowMemories(true)}>Mis lecturas{savedReadings.length ? ` · ${savedReadings.length}` : ""}</button>
         <div className="headerMeta">TAROT INTERACTIVO · 78 CARTAS</div>
         <div className="headerSubmeta">VIDA · SALUD · AUTOCONOCIMIENTO · PSICOLOGÍA</div>
       </div>
@@ -672,7 +782,7 @@ export default function Home(){
               <button
                 className={selectionMode === "card" ? "primary" : "secondary"}
                 type="button"
-                onClick={() => {setSelectionMode("card"); setSelectionNotice("");}}
+                onClick={() => {setDeckOrder(order => order.map(item => ({...item, slot:undefined}))); setSelectionMode("card"); setSelectionNotice("");}}
                 disabled={picked.length >= count}
               >
                 🃏 Escoger por vista
@@ -681,7 +791,7 @@ export default function Home(){
               <button
                 className={selectionMode === "position" ? "primary" : "secondary"}
                 type="button"
-                onClick={() => {setSelectionMode("position"); setSelectionNotice("");}}
+                onClick={() => {setDeckOrder(order => order.map(item => ({...item, slot:undefined}))); setSelectionMode("position"); setSelectionNotice("");}}
                 disabled={picked.length >= count}
               >
                 🔢 Escoger por número
@@ -767,8 +877,8 @@ export default function Home(){
               className={`${isPicked ? "tarot picked" : "tarot"} ${!started ? "preStart" : ""}`}
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
-              onClick={() => started && selectionMode === "card" && choose(c)}
-              disabled={!started || selectionMode !== "card"}
+              onClick={() => started ? (selectionMode === "card" ? choose(c) : undefined) : setZoomCard(c)}
+              disabled={started && selectionMode !== "card"}
               aria-label={!started ? c.name : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
               title={!started ? c.name : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Posición ${deckOrder.indexOf(c) + 1}`}
             >
@@ -888,16 +998,45 @@ export default function Home(){
       <div className="readingShare">
         <div className="label">Guardar o compartir esta lectura</div>
         <div className="shareButtons">
+          <button className="shareButton" type="button" onClick={saveCurrentReading}>Guardar en Mis lecturas</button>
           <button className="shareButton whatsapp" type="button" onClick={shareReading}>Compartir por WhatsApp</button>
           <button className="shareButton email" type="button" onClick={() => {
             const subject = encodeURIComponent("Mi tirada · Tarot AO");
             const body = encodeURIComponent(shareText());
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
           }}>Compartir por email</button>
-          <button className="shareButton other" type="button" onClick={shareReading}>Otras opciones</button>
         </div>
       </div>
     </section>}
+
+    {showMemories && (
+      <div className="cardZoomOverlay" role="dialog" aria-modal="true" aria-label="Mis lecturas" onClick={() => setShowMemories(false)}>
+        <div className="cardZoomPanel" onClick={e => e.stopPropagation()}>
+          <button className="cardZoomClose" type="button" onClick={() => setShowMemories(false)} aria-label="Cerrar">×</button>
+          <div style={{padding:"8px"}}>
+            <div className="label">HISTORIAL</div>
+            <h2 style={{marginTop:"6px"}}>Mis lecturas</h2>
+            {!savedReadings.length ? (
+              <p>Aquí aparecerán las lecturas que guardes.</p>
+            ) : (
+              <div style={{display:"grid",gap:"12px",marginTop:"20px"}}>
+                {savedReadings.map(item => (
+                  <article key={item.id} style={{border:"1px solid currentColor",borderRadius:"10px",padding:"14px"}}>
+                    <div style={{fontSize:".82rem",opacity:.68}}>{new Date(item.createdAt).toLocaleString("es-ES")}</div>
+                    <strong style={{display:"block",marginTop:"4px"}}>{item.spreadName}</strong>
+                    <p style={{margin:"7px 0"}}>“{item.question}”</p>
+                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                      <button className="primary" type="button" onClick={() => loadSavedReading(item)}>Abrir lectura</button>
+                      <button className="textButton" type="button" onClick={() => removeSavedReading(item.id)}>Eliminar</button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
 
     {zoomCard && (
       <div

@@ -495,7 +495,7 @@ export default function Home(){
   function shareUrl(){
     if (typeof window === "undefined") return "";
     const ids = selected.map(c => c.id).join("-");
-    return `${window.location.origin}/compartir/${ids}?q=${encodeURIComponent(effectiveQuestion)}`;
+    return `${window.location.origin}/compartir/${ids}?q=${encodeURIComponent(effectiveQuestion)}&s=${spread}&v=${spread === 3 ? threeCardVariant : 0}`;
   }
 
   function shareText(){
@@ -553,7 +553,7 @@ Consejo: ${card.advice}`
     const whatsappBase = isMobile
       ? "https://api.whatsapp.com/send?text="
       : "https://web.whatsapp.com/send?text=";
-    window.open(`${whatsappBase}${encodeURIComponent(`Mira mi lectura de Tarot AO\n${url}`)}`, "_blank", "noopener,noreferrer");
+    window.open(`${whatsappBase}${encodeURIComponent(`Mira mi lectura completa de Tarot AO\n\n${text}`)}`, "_blank", "noopener,noreferrer");
   }
 
   return <main className="appShell">

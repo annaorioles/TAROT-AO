@@ -158,7 +158,7 @@ function imageSources(card: Card){
     );
   }
 
-  return Array.from(new Set(sources));
+  return [...new Set(sources)];
 }
 
 function CardImage({card, className, alt}:{card:Card; className?:string; alt:string}){
@@ -170,6 +170,14 @@ function CardImage({card, className, alt}:{card:Card; className?:string; alt:str
       className={className}
       src={sources[sourceIndex]}
       alt={alt}
+      style={{
+        display:"block",
+        width:"100%",
+        height:"100%",
+        objectFit:"cover",
+        objectPosition:"center",
+        borderRadius:"inherit"
+      }}
       onError={() => {
         setSourceIndex(index => Math.min(index + 1, sources.length - 1));
       }}
@@ -780,8 +788,18 @@ Consejo: ${card.advice}`
       </div>
 
       <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "Haz clic en una carta para consultar su significado" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
-      {selectionMode === "card" && <div className="deck" aria-label="Baraja de 78 cartas">
-        {(started ? deckOrder : cards).map((c) => {
+      {selectionMode === "card" && <div
+        className="deck"
+        aria-label="Baraja de 78 cartas"
+        style={{
+          display:"grid",
+          gridTemplateColumns:"repeat(12, minmax(0, 1fr))",
+          gap:"10px",
+          width:"100%",
+          alignItems:"start"
+        }}
+      >
+        {deckOrder.map((c) => {
           const pickNumber = c.slot != null ? c.slot - 1 : -1;
           const isPicked = pickNumber !== -1;
           return (
@@ -789,19 +807,33 @@ Consejo: ${card.advice}`
               className={isPicked ? "tarot picked" : "tarot"}
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
-              style={{cursor:"pointer", pointerEvents:"auto", position:"relative"}}
+              style={{
+                cursor:"pointer",
+                pointerEvents:"auto",
+                position:"relative",
+                display:"block",
+                width:"100%",
+                aspectRatio:"2 / 3",
+                minWidth:0,
+                height:"auto",
+                padding:0,
+                overflow:"hidden",
+                boxSizing:"border-box"
+              }}
               onClick={() => {
                 if (!started) {
                   setZoomCard(c);
-                  return;
+                } else {
+                  choose(c);
                 }
-                choose(c);
               }}
               disabled={false}
-              aria-label={!started ? `Consultar ficha de ${c.name}` : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${(started ? deckOrder : cards).indexOf(c) + 1}`}
+              aria-label={!started ? `Consultar ficha de ${c.name}` : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
             >
               {!started ? (
-                <CardImage card={c} alt={c.name}/>
+                <span style={{display:"block",position:"relative",pointerEvents:"none",width:"100%",height:"100%"}}>
+                  <CardImage card={c} alt={c.name}/>
+                </span>
               ) : (
                 <span className="tarotFlip">
                   <span className="cardFace cardFaceBack">
@@ -837,7 +869,7 @@ Consejo: ${card.advice}`
                     pointerEvents:"none"
                   }}
                 >
-                  {(started ? deckOrder : cards).indexOf(c) + 1}
+                  {deckOrder.indexOf(c) + 1}
                 </span>
               )}
               {isPicked && <span className="pickedMark">{pickNumber + 1}</span>}

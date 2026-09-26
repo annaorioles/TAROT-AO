@@ -170,6 +170,14 @@ function CardImage({card, className, alt}:{card:Card; className?:string; alt:str
       className={className}
       src={sources[sourceIndex]}
       alt={alt}
+      style={{
+        display:"block",
+        width:"100%",
+        height:"100%",
+        objectFit:"cover",
+        objectPosition:"center",
+        borderRadius:"inherit"
+      }}
       onError={() => {
         setSourceIndex(index => Math.min(index + 1, sources.length - 1));
       }}
@@ -697,18 +705,6 @@ export default function Home(){
         border: 2px solid rgba(38,130,145,.55);
       }
 
-      .cardFaceFront {
-        display: none;
-      }
-
-      .tarot.picked .cardFaceBack {
-        display: none;
-      }
-
-      .tarot.picked .cardFaceFront {
-        display: block;
-      }
-
       .tarot.picked {
         border-color: #16788a !important;
       }
@@ -992,32 +988,36 @@ export default function Home(){
                 <span className="preStartFace">
                   <CardImage card={c} alt={c.name}/>
                 </span>
+              ) : isPicked ? (
+                <span
+                  className="tarotFlip"
+                  style={{
+                    position:"relative",
+                    display:"block",
+                    width:"100%",
+                    height:"100%",
+                    minWidth:0,
+                    minHeight:0,
+                    borderRadius:"inherit",
+                    overflow:"hidden"
+                  }}
+                >
+                  <CardImage card={c} alt={c.name}/>
+                </span>
               ) : (
-                <span className="tarotFlip" style={{position:"relative"}}>
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      position:"absolute",
-                      zIndex:5,
-                      top:"8px",
-                      left:"8px",
-                      minWidth:"26px",
-                      height:"26px",
-                      padding:"0 6px",
-                      borderRadius:"999px",
-                      display:"flex",
-                      alignItems:"center",
-                      justifyContent:"center",
-                      fontSize:"12px",
-                      fontWeight:800,
-                      lineHeight:1,
-                      background:"rgba(255,255,255,.92)",
-                      color:"#111",
-                      boxSizing:"border-box"
-                    }}
-                  >
-                    {deckOrder.indexOf(c) + 1}
-                  </span>
+                <span
+                  className="tarotFlip"
+                  style={{
+                    position:"relative",
+                    display:"block",
+                    width:"100%",
+                    height:"100%",
+                    minWidth:0,
+                    minHeight:0,
+                    borderRadius:"inherit",
+                    overflow:"hidden"
+                  }}
+                >
                   <span className="cardFace cardFaceBack">
                     <span className="backFrame backFrameOuter"></span>
                     <span className="backFrame backFrameInner"></span>
@@ -1027,12 +1027,9 @@ export default function Home(){
                       <span className="backStar">✦</span>
                     </span>
                   </span>
-                  <span className="cardFace cardFaceFront">
-                    <CardImage card={c} alt={c.name}/>
-                  </span>
                 </span>
               )}
-              {started && (
+
                 <span
                   className="positionMark"
                   style={{

@@ -21,6 +21,8 @@ type Spread = {
   positions: string[];
 };
 
+type SelectionMode = "card" | "position";
+
 type Category = {
   name: string;
   questions: string[];
@@ -265,6 +267,8 @@ export default function Home(){
   const picked = selectedFilled;
   const [zoomCard, setZoomCard] = useState<Card | null>(null);
   const [positionInput, setPositionInput] = useState("");
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>("card");
+  const [selectionNotice, setSelectionNotice] = useState("");
 
   function freshDeck(){
     return makeDeck();
@@ -276,6 +280,8 @@ export default function Home(){
     setStarted(false);
     setZoomCard(null);
     setPositionInput("");
+    setSelectionMode("card");
+    setSelectionNotice("");
   }
 
   function startReading(){
@@ -284,6 +290,8 @@ export default function Home(){
     setReading(false);
     setZoomCard(null);
     setPositionInput("");
+    setSelectionMode("card");
+    setSelectionNotice("");
   }
 
   function selectCat(i:number){
@@ -297,13 +305,15 @@ export default function Home(){
     setStarted(false);
     setZoomCard(null);
     setPositionInput("");
+    setSelectionMode("card");
+    setSelectionNotice("");
   }
 
   // Este es el único mecanismo de selección.
   // La carta pulsada conserva su posición dentro de la baraja y recibe un slot.
   // La misma carta/slot alimenta arriba, abajo y la lectura.
   function choose(card:Card){
-    if(reading) return;
+    if(reading || !started || selectionMode !== "card") return;
 
     setDeckOrder(order => {
       const clicked = order.find(item => item.id === card.id);
@@ -336,17 +346,40 @@ export default function Home(){
   }
 
   function chooseByPosition(){
-    if(!started || reading) return;
+    if(!started || reading || selectionMode !== "position") return;
 
     const position = Number.parseInt(positionInput, 10);
 
-    if(!Number.isInteger(position) || position < 1 || position > 78) return;
+    if(!Number.isInteger(position) || position < 1 || position > 78){
+      setSelectionNotice("Escribe una posición entre 1 y 78.");
+      return;
+    }
 
     const card = deckOrder[position - 1];
-    if(card){
-      choose(card);
-      setPositionInput("");
+
+    if(!card){
+      setSelectionNotice("No se ha encontrado esa posición.");
+      return;
     }
+
+    if(card.slot != null){
+      setSelectionNotice(`La posición ${position} ya forma parte de tu tirada.`);
+      return;
+    }
+
+    chooseByPositionCommit(card);
+  }
+
+  function chooseByPositionCommit(card:Card){
+    // La carta se obtiene del orden ya mezclado; el número nunca identifica la carta.
+    setDeckOrder(order => {
+      const selectedCount = order.filter(item => item.slot != null).length;
+      if(selectedCount >= count) return order;
+      const nextSlot = selectedCount + 1;
+      return order.map(item => item.id === card.id ? {...item, slot: nextSlot} : item);
+    });
+    setPositionInput("");
+    setSelectionNotice("");
   }
 
   function changeCardAt(index:number){
@@ -374,6 +407,8 @@ export default function Home(){
     setReading(false);
     setZoomCard(null);
     setPositionInput("");
+    setSelectionMode("card");
+    setSelectionNotice("");
   }
 
   function interpret(){
@@ -640,56 +675,91 @@ export default function Home(){
         <div className="counter"><b>{picked.length}</b><span>/ {count}</span></div>
       </div>
         {started && (
-          <div
-            className="positionPicker"
-            style={{
-              display:"flex",
-              flexWrap:"wrap",
-              alignItems:"center",
-              gap:"10px",
-              margin:"18px 0 8px"
-            }}
-          >
-            <label htmlFor="positionInput" style={{fontWeight:700}}>
-              Elegir por posición
-            </label>
+          <div className="selectionMethod" style={{margin:"18px 0 12px"}}>
+            <div style={{fontWeight:800, marginBottom:"10px"}}>¿Cómo quieres escoger tus cartas?</div>
 
-            <input
-              id="positionInput"
-              type="number"
-              min="1"
-              max="78"
-              inputMode="numeric"
-              value={positionInput}
-              onChange={e=>setPositionInput(e.target.value)}
-              onKeyDown={e=>{if(e.key === "Enter") chooseByPosition();}}
-              placeholder="1–78"
-              aria-label="Número de posición de la carta"
-              style={{
-                width:"88px",
-                padding:"10px 12px",
-                border:"1px solid currentColor",
-                borderRadius:"8px",
-                background:"transparent",
-                fontSize:"16px"
-              }}
-            />
+            <div style={{display:"flex", flexWrap:"wrap", gap:"10px", alignItems:"center"}}>
+              <button
+                className={selectionMode === "card" ? "primary" : "secondary"}
+                type="button"
+                onClick={() => {setSelectionMode("card"); setSelectionNotice(""); setPositionInput("");}}
+                disabled={picked.length >= count}
+              >
+                🃏 Escoger por carta
+              </button>
 
-            <button
-              className="secondary"
-              type="button"
-              onClick={chooseByPosition}
-              disabled={!positionInput || picked.length >= count}
-            >
-              Elegir carta
-            </button>
+              <button
+                className={selectionMode === "position" ? "primary" : "secondary"}
+                type="button"
+                onClick={() => {setSelectionMode("position"); setSelectionNotice("");}}
+                disabled={picked.length >= count}
+              >
+                🔢 Escoger por posición numérica
+              </button>
+            </div>
 
-            <span style={{opacity:0.7,fontSize:"0.9rem"}}>
-              Es la posición actual de la carta después de barajar.
-            </span>
+            {selectionMode === "card" ? (
+              <p style={{margin:"10px 0 0", opacity:0.72, fontSize:"0.92rem"}}>
+                La baraja ya está mezclada. Pulsa directamente la carta que quieras elegir.
+              </p>
+            ) : (
+              <div
+                className="positionPicker"
+                style={{
+                  display:"flex",
+                  flexWrap:"wrap",
+                  alignItems:"center",
+                  gap:"10px",
+                  margin:"14px 0 0"
+                }}
+              >
+                <label htmlFor="positionInput" style={{fontWeight:700}}>
+                  Posición de la carta
+                </label>
+
+                <input
+                  id="positionInput"
+                  type="number"
+                  min="1"
+                  max="78"
+                  inputMode="numeric"
+                  value={positionInput}
+                  onChange={e => {setPositionInput(e.target.value); setSelectionNotice("");}}
+                  onKeyDown={e => {if(e.key === "Enter") chooseByPosition();}}
+                  placeholder="1–78"
+                  aria-label="Número de posición de la carta después de barajar"
+                  style={{
+                    width:"88px",
+                    padding:"10px 12px",
+                    border:"1px solid currentColor",
+                    borderRadius:"8px",
+                    background:"transparent",
+                    fontSize:"16px"
+                  }}
+                />
+
+                <button
+                  className="secondary"
+                  type="button"
+                  onClick={chooseByPosition}
+                  disabled={!positionInput || picked.length >= count}
+                >
+                  Elegir esta posición
+                </button>
+
+                <span style={{opacity:0.7,fontSize:"0.9rem"}}>
+                  Es la posición actual de la carta en la baraja ya mezclada.
+                </span>
+              </div>
+            )}
+
+            {selectionNotice && (
+              <div role="status" style={{marginTop:"9px", fontSize:"0.9rem", fontWeight:600}}>
+                {selectionNotice}
+              </div>
+            )}
           </div>
         )}
-
         <div className="actions actionsCentered">
           {!started && <button className="primary" type="button" onClick={startReading}>Iniciar tirada</button>}
           <button className="secondary shuffleButton" onClick={startReading}>Mezclar</button>
@@ -709,17 +779,41 @@ export default function Home(){
               className={`${isPicked ? "tarot picked" : "tarot"} ${!started ? "preStart" : ""}`}
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
-              onClick={() => started && choose(c)}
-              disabled={!started}
+              onClick={() => started && selectionMode === "card" && choose(c)}
+              disabled={!started || selectionMode !== "card"}
               aria-label={!started ? c.name : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
-              title={!started ? c.name : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Elegir posición ${deckOrder.indexOf(c) + 1}`}
+              title={!started ? c.name : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Posición ${deckOrder.indexOf(c) + 1}`}
             >
               {!started ? (
                 <span className="preStartFace">
                   <CardImage card={c} alt={c.name}/>
                 </span>
               ) : (
-                <span className="tarotFlip">
+                <span className="tarotFlip" style={{position:"relative"}}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      position:"absolute",
+                      zIndex:5,
+                      top:"8px",
+                      left:"8px",
+                      minWidth:"26px",
+                      height:"26px",
+                      padding:"0 6px",
+                      borderRadius:"999px",
+                      display:"flex",
+                      alignItems:"center",
+                      justifyContent:"center",
+                      fontSize:"12px",
+                      fontWeight:800,
+                      lineHeight:1,
+                      background:"rgba(255,255,255,.92)",
+                      color:"#111",
+                      boxSizing:"border-box"
+                    }}
+                  >
+                    {deckOrder.indexOf(c) + 1}
+                  </span>
                   <span className="cardFace cardFaceBack">
                     <span className="backFrame backFrameOuter"></span>
                     <span className="backFrame backFrameInner"></span>

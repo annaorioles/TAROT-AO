@@ -779,31 +779,31 @@ Consejo: ${card.advice}`
         </div>
       </div>
 
-      <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "PULSA CUALQUIER CARTA · VER SU FICHA" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
+      <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "Haz clic en una carta para consultar su significado" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
       {selectionMode === "card" && <div className="deck" aria-label="Baraja de 78 cartas">
         {deckOrder.map((c) => {
           const pickNumber = c.slot != null ? c.slot - 1 : -1;
           const isPicked = pickNumber !== -1;
           return (
             <button
-              className={`${isPicked ? "tarot picked" : "tarot"} ${!started ? "preStart" : ""}`}
+              className={isPicked ? "tarot picked" : "tarot"}
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
+              style={{cursor:"pointer", pointerEvents:"auto", position:"relative"}}
               onClick={() => {
                 if (!started) {
                   setZoomCard(c);
-                  return;
+                } else {
+                  choose(c);
                 }
-                choose(c);
               }}
               disabled={false}
               aria-label={!started ? `Consultar ficha de ${c.name}` : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
               title={!started ? `Consultar ficha · ${c.name}` : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Elegir posición ${deckOrder.indexOf(c) + 1}`}
             >
               {!started ? (
-                <span className="preStartFace" style={{display:"block",position:"relative"}}>
+                <span style={{display:"block",position:"relative",pointerEvents:"none"}}>
                   <CardImage card={c} alt={c.name}/>
-                  <span style={{position:"absolute",left:"6px",right:"6px",bottom:"6px",padding:"5px 4px",borderRadius:"7px",background:"rgba(255,255,255,.9)",color:"#24201b",fontSize:"10px",fontWeight:800,letterSpacing:".06em",textAlign:"center",pointerEvents:"none"}}>VER FICHA</span>
                 </span>
               ) : (
                 <span className="tarotFlip">

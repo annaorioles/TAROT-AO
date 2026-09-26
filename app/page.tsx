@@ -781,7 +781,7 @@ Consejo: ${card.advice}`
 
       <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "Haz clic en una carta para consultar su significado" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
       {selectionMode === "card" && <div className="deck" aria-label="Baraja de 78 cartas">
-        {deckOrder.map((c) => {
+        {(started ? deckOrder : cards).map((c) => {
           const pickNumber = c.slot != null ? c.slot - 1 : -1;
           const isPicked = pickNumber !== -1;
           return (
@@ -798,7 +798,7 @@ Consejo: ${card.advice}`
                 choose(c);
               }}
               disabled={false}
-              aria-label={!started ? `Consultar ficha de ${c.name}` : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
+              aria-label={!started ? `Consultar ficha de ${c.name}` : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${(started ? deckOrder : cards).indexOf(c) + 1}`}
             >
               {!started ? (
                 <CardImage card={c} alt={c.name}/>
@@ -837,7 +837,7 @@ Consejo: ${card.advice}`
                     pointerEvents:"none"
                   }}
                 >
-                  {deckOrder.indexOf(c) + 1}
+                  {(started ? deckOrder : cards).indexOf(c) + 1}
                 </span>
               )}
               {isPicked && <span className="pickedMark">{pickNumber + 1}</span>}

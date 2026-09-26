@@ -802,9 +802,6 @@ export default function Home(){
             <strong>La clave para ti:</strong> {practicalKey()}
           </p>
         </div>
-        <p>{narrative()}</p>
-        <p className="storyConclusion"><strong>La clave para ti:</strong> {practicalKey()}</p>
-      </div>
 
       <div className="readingShare">
         <div className="label">Guardar o compartir esta lectura</div>

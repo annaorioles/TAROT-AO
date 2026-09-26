@@ -150,27 +150,27 @@ export default async function SharedReading({params,searchParams}:{params:Promis
   const evolution=evolutionaryReading(selected);
   const key=practicalKey(selected);
   return <main style={{minHeight:"100vh",background:"#edf6f7",color:"#1b4652",fontFamily:"Arial,sans-serif",padding:"38px 5.5vw 70px"}}>
-    <style>
-    .shared-shell{box-sizing:border-box;width:100%;max-width:100%;overflow-x:hidden;}
-    .shared-header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
-    .shared-card-row{display:grid;grid-template-columns:48px 160px 220px minmax(0,1fr);gap:20px;align-items:center;padding:26px 0;border-bottom:1px solid #c8e0e4}
-    .shared-card-answer{grid-column:auto;min-width:0;overflow-wrap:anywhere}
-    @media (max-width:700px){
-      .shared-shell{padding:22px 16px 50px!important}
-      .shared-header{display:block;margin-bottom:22px}
-      .shared-header h1{font-size:42px!important}
-      .shared-header p{font-size:17px!important;line-height:1.5}
-      .shared-badge{display:inline-block;margin-top:16px}
-      .shared-central{padding:20px!important;border-radius:16px!important}
-      .shared-central p{font-size:17px!important;line-height:1.65!important}
-      .shared-card-row{grid-template-columns:34px 92px minmax(0,1fr);gap:12px;padding:20px 0;align-items:start}
-      .shared-card-row img{width:92px!important;height:138px!important}
-      .shared-card-title{font-size:22px!important}
-      .shared-card-answer{grid-column:2 / -1;font-size:16px!important;line-height:1.65!important;margin-top:4px!important}
-      .shared-reading{padding:20px!important;border-radius:16px!important}
-      .shared-reading p{font-size:16px!important;line-height:1.7!important}
-    }
-</style>
+    <style>{`
+      .shared-shell{box-sizing:border-box;width:100%;max-width:100%;overflow-x:hidden;}
+      .shared-header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
+      .shared-card-row{display:grid;grid-template-columns:48px 160px 220px minmax(0,1fr);gap:20px;align-items:center;padding:26px 0;border-bottom:1px solid #c8e0e4}
+      .shared-card-answer{grid-column:auto;min-width:0;overflow-wrap:anywhere}
+      @media (max-width:700px){
+        .shared-shell{padding:22px 16px 50px!important}
+        .shared-header{display:block;margin-bottom:22px}
+        .shared-header h1{font-size:42px!important}
+        .shared-header p{font-size:17px!important;line-height:1.5}
+        .shared-badge{display:inline-block;margin-top:16px}
+        .shared-central{padding:20px!important;border-radius:16px!important}
+        .shared-central p{font-size:17px!important;line-height:1.65!important}
+        .shared-card-row{display:grid;grid-template-columns:34px 92px minmax(0,1fr);gap:12px;padding:20px 0;align-items:start}
+        .shared-card-row img{width:92px!important;height:138px!important}
+        .shared-card-title{font-size:22px!important}
+        .shared-card-answer{grid-column:1 / -1;font-size:16px!important;line-height:1.65!important;margin-top:8px!important}
+        .shared-reading{padding:20px!important;border-radius:16px!important}
+        .shared-reading p{font-size:16px!important;line-height:1.7!important}
+      }
+    `}</style>
     <div className="shared-shell" style={{maxWidth:1400,margin:"0 auto"}}>
       <div style={{fontSize:13,letterSpacing:".14em",fontWeight:700,color:"#0f7288",marginBottom:14}}>04 · LA REVELACIÓN</div>
       <header className="shared-header">

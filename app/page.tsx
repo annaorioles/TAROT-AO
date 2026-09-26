@@ -664,6 +664,55 @@ export default function Home(){
         padding: 8px;
       }
 
+      /* Estado de las cartas durante la selección:
+         por defecto se muestra el reverso;
+         al seleccionar una carta se muestra su cara. */
+      .tarotFlip {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        border-radius: inherit;
+        overflow: hidden;
+      }
+
+      .cardFace {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+
+      .cardFaceBack {
+        display: block;
+        background:
+          radial-gradient(circle at center, rgba(255,255,255,.16) 0 18%, transparent 19%),
+          linear-gradient(135deg, #f4f7f5 0%, #dbe8e8 100%);
+        border: 2px solid rgba(38,130,145,.55);
+      }
+
+      .cardFaceFront {
+        display: none;
+      }
+
+      .tarot.picked .cardFaceBack {
+        display: none;
+      }
+
+      .tarot.picked .cardFaceFront {
+        display: block;
+      }
+
+      .tarot.picked {
+        border-color: #16788a !important;
+      }
+
       .tarot-ficha-image {
         min-width: 0;
         max-width: 320px;

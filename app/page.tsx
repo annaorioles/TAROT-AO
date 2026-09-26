@@ -790,21 +790,13 @@ Consejo: ${card.advice}`
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
               style={{cursor:"pointer", pointerEvents:"auto", position:"relative"}}
-              onClick={() => {
-                if (!started) {
-                  setZoomCard(c);
-                } else {
-                  choose(c);
-                }
-              }}
+              onClick={() => !started ? setZoomCard(c) : choose(c)}
               disabled={false}
               aria-label={!started ? `Consultar ficha de ${c.name}` : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
               title={!started ? `Consultar ficha · ${c.name}` : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Elegir posición ${deckOrder.indexOf(c) + 1}`}
             >
               {!started ? (
-                <span style={{display:"block",position:"relative",pointerEvents:"none"}}>
-                  <CardImage card={c} alt={c.name}/>
-                </span>
+                <CardImage card={c} alt={c.name}/>
               ) : (
                 <span className="tarotFlip">
                   <span className="cardFace cardFaceBack">

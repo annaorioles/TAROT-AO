@@ -161,14 +161,13 @@ function imageSources(card: Card){
   return [...new Set(sources)];
 }
 
-function CardImage({card, className, alt, style}:{card:Card; className?:string; alt:string; style?:React.CSSProperties}){
+function CardImage({card, className, alt}:{card:Card; className?:string; alt:string}){
   const sources = imageSources(card);
   const [sourceIndex, setSourceIndex] = useState(0);
 
   return (
     <img
       className={className}
-      style={style}
       src={sources[sourceIndex]}
       alt={alt}
       onError={() => {
@@ -576,17 +575,24 @@ export default function Home(){
   function shareUrl(){
     if (typeof window === "undefined") return "";
     const ids = selected.map(c => c.id).join("-");
-    return `${window.location.origin}/compartir/${ids}?q=${encodeURIComponent(effectiveQuestion)}&s=${spread}&v=${spread === 3 ? threeCardVariant : 0}`;
+    return `${window.location.origin}/compartir/${ids}?q=${encodeURIComponent(effectiveQuestion)}`;
   }
 
   function shareText(){
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const url = shareUrl();
 
     const lines = [
       "Tarot AO · Anna Oriol",
-      "",
       `Pregunta: ${effectiveQuestion}`,
       `Tirada: ${current.name} — ${current.positions.join(" / ")}`,
+      "",
+      `Ver la tirada: ${url}`,
+      "",
+      "CARTAS",
+      ...selected.map((card, i) =>
+        `${i+1}. ${current.positions[i]}: ${card.name}\nSignificado: ${card.essence}\nLuz: ${card.light}\nSombra: ${card.shadow}\nConsejo: ${card.advice}\n${origin}/cards/${encodeURIComponent(card.file)}`
+      ),
       "",
       "RESPUESTA A TU PREGUNTA",
       synthesis(),
@@ -599,8 +605,6 @@ export default function Home(){
       "",
       "CLAVE PARA LLEVARLO A TU VIDA",
       practicalKey(),
-      "",
-      `Ver mi lectura: ${url}`,
       "",
       "Lectura simbólica para la reflexión personal."
     ];
@@ -642,6 +646,58 @@ export default function Home(){
   }
 
   return <main className="appShell">
+    <style jsx global>{`
+      /* TAROT AO · Corrección móvil */
+      .tarot-deck-grid {
+        display: grid !important;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+        align-items: start;
+      }
+
+      .tarot-ficha-grid {
+        display: grid;
+        grid-template-columns: minmax(130px, 35%) minmax(0, 1fr);
+        gap: 28px;
+        align-items: start;
+        padding: 8px;
+      }
+
+      .tarot-ficha-image {
+        min-width: 0;
+        max-width: 320px;
+        margin: 0 auto;
+      }
+
+      @media (max-width: 700px) {
+        .tarot-deck-grid {
+          grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+          gap: 7px !important;
+        }
+
+        .tarot-ficha-grid {
+          grid-template-columns: 1fr !important;
+          gap: 18px !important;
+          padding: 4px !important;
+        }
+
+        .tarot-ficha-image {
+          width: 100% !important;
+          max-width: 230px !important;
+          margin: 0 auto !important;
+        }
+
+        .cardZoomPanel {
+          width: calc(100vw - 24px) !important;
+          max-width: calc(100vw - 24px) !important;
+          max-height: calc(100vh - 24px) !important;
+          padding: 18px !important;
+          overflow-y: auto !important;
+          box-sizing: border-box !important;
+        }
+      }
+    `}</style>
     <header className="topbar">
       <a className="brand" href="#inicio" aria-label="Tarot AO, Anna Oriol, inicio">
         <span className="brandName">TAROT AO</span>
@@ -868,7 +924,7 @@ export default function Home(){
 
       <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "Inicia la tirada para elegir" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
       {selectionMode === "card" && (
-      <div className="deck" aria-label="Baraja de 78 cartas">
+      <div className="deck tarot-deck-grid" aria-label="Baraja de 78 cartas">
         {deckOrder.map((c) => {
           const pickNumber = c.slot != null ? c.slot - 1 : -1;
           const isPicked = pickNumber !== -1;
@@ -887,37 +943,32 @@ export default function Home(){
                 <span className="preStartFace">
                   <CardImage card={c} alt={c.name}/>
                 </span>
-              ) : isPicked ? (
-                <span
-                  aria-label={`${c.name}, carta seleccionada`}
-                  style={{
-                    position:"absolute",
-                    inset:0,
-                    display:"block",
-                    width:"100%",
-                    height:"100%",
-                    zIndex:10,
-                    overflow:"hidden",
-                    borderRadius:"inherit",
-                    transform:"none",
-                    opacity:1,
-                    visibility:"visible",
-                  }}
-                >
-                  <CardImage
-                    card={c}
-                    alt={c.name}
-                    style={{
-                      display:"block",
-                      width:"100%",
-                      height:"100%",
-                      objectFit:"cover",
-                      objectPosition:"center",
-                    }}
-                  />
-                </span>
               ) : (
                 <span className="tarotFlip" style={{position:"relative"}}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      position:"absolute",
+                      zIndex:5,
+                      top:"8px",
+                      left:"8px",
+                      minWidth:"26px",
+                      height:"26px",
+                      padding:"0 6px",
+                      borderRadius:"999px",
+                      display:"flex",
+                      alignItems:"center",
+                      justifyContent:"center",
+                      fontSize:"12px",
+                      fontWeight:800,
+                      lineHeight:1,
+                      background:"rgba(255,255,255,.92)",
+                      color:"#111",
+                      boxSizing:"border-box"
+                    }}
+                  >
+                    {deckOrder.indexOf(c) + 1}
+                  </span>
                   <span className="cardFace cardFaceBack">
                     <span className="backFrame backFrameOuter"></span>
                     <span className="backFrame backFrameInner"></span>
@@ -926,6 +977,9 @@ export default function Home(){
                     <span className="backMedallion">
                       <span className="backStar">✦</span>
                     </span>
+                  </span>
+                  <span className="cardFace cardFaceFront">
+                    <CardImage card={c} alt={c.name}/>
                   </span>
                 </span>
               )}
@@ -1008,6 +1062,7 @@ export default function Home(){
             const body = encodeURIComponent(shareText());
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
           }}>Compartir por email</button>
+          <button className="shareButton other" type="button" onClick={shareReading}>Otras opciones</button>
         </div>
       </div>
     </section>}
@@ -1061,6 +1116,7 @@ export default function Home(){
           </button>
 
           <div
+            className="tarot-ficha-grid"
             style={{
               display:"grid",
               gridTemplateColumns:"minmax(130px,35%) minmax(0,1fr)",
@@ -1069,8 +1125,8 @@ export default function Home(){
               padding:"8px"
             }}
           >
-            <div style={{minWidth:0}}>
-              <div style={{maxWidth:"320px", margin:"0 auto"}}><CardImage card={zoomCard} alt={zoomCard.name}/></div>
+            <div className="tarot-ficha-image" style={{minWidth:0}}>
+              <CardImage card={zoomCard} alt={zoomCard.name}/>
             </div>
 
             <div style={{minWidth:0}}>

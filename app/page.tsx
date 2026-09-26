@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type Card = {
   id: string;
@@ -22,16 +22,6 @@ type Spread = {
 };
 
 type SelectionMode = "card" | "position";
-
-type SavedReading = {
-  id: string;
-  createdAt: string;
-  question: string;
-  spreadName: string;
-  positions: string[];
-  cards: { id: string; name: string; file: string }[];
-  interpretation: { synthesis: string; spread: string; evolutionary: string; practical: string };
-};
 
 type Category = {
   name: string;
@@ -157,6 +147,16 @@ function imageSources(card: Card){
     sources.push("/cards/ocho-de-copas.png", "/ocho-de-copas.png");
     sources.push("/cards/29-ocho-de-copas.jpg", "/29-ocho-de-copas.jpg");
   }
+  if (card.id === "53") {
+    sources.push(
+      "/cards/53-cuatro-de-bastos.jpg",
+      "/53-cuatro-de-bastos.jpg",
+      "/cards/cuatro-de-bastos.png",
+      "/cuatro-de-bastos.png",
+      "/cards/cuatro-de-bastos.jpg",
+      "/cuatro-de-bastos.jpg"
+    );
+  }
 
   return [...new Set(sources)];
 }
@@ -276,79 +276,8 @@ export default function Home(){
   const selectedFilled = selected;
   const picked = selectedFilled;
   const [zoomCard, setZoomCard] = useState<Card | null>(null);
-  const [positionInput, setPositionInput] = useState("");
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("card");
   const [selectionNotice, setSelectionNotice] = useState("");
-  const [savedReadings, setSavedReadings] = useState<SavedReading[]>([]);
-  const [showMemories, setShowMemories] = useState(false);
-  const [activeSavedId, setActiveSavedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem("tarot-ao-readings-v1");
-      if (raw) setSavedReadings(JSON.parse(raw));
-    } catch {
-      // La lectura sigue funcionando aunque el almacenamiento local no esté disponible.
-    }
-  }, []);
-
-  function persistReadings(next: SavedReading[]) {
-    setSavedReadings(next);
-    try {
-      window.localStorage.setItem("tarot-ao-readings-v1", JSON.stringify(next.slice(0, 50)));
-    } catch {
-      // No bloqueamos la lectura por un problema de almacenamiento.
-    }
-  }
-
-  function saveCurrentReading() {
-    if (!selected.length) return;
-    const id = `${Date.now()}-${selected.map(c => c.id).join("-")}`;
-    const item: SavedReading = {
-      id,
-      createdAt: new Date().toISOString(),
-      question: effectiveQuestion,
-      spreadName: current.name,
-      positions: current.positions,
-      cards: selected.map(c => ({id:c.id,name:c.name,file:c.file})),
-      interpretation: {
-        synthesis: synthesis(),
-        spread: spreadReading(),
-        evolutionary: evolutionaryReading(),
-        practical: practicalKey()
-      }
-    };
-    persistReadings([item, ...savedReadings.filter(r => r.id !== activeSavedId)]);
-    setActiveSavedId(id);
-    setSelectionNotice("Lectura guardada en Mis lecturas.");
-  }
-
-  function loadSavedReading(item: SavedReading) {
-    const byId = new Map(cards.map(c => [c.id, c]));
-    const restored = item.cards.map((saved, i) => {
-      const card = byId.get(saved.id);
-      return card ? {...card, slot:i+1} : null;
-    }).filter(Boolean) as Card[];
-    if (!restored.length) return;
-    const restoredIds = new Set(restored.map(c => c.id));
-    setDeckOrder(cards.map(c => restoredIds.has(c.id) ? (restored.find(r => r.id === c.id) as Card) : {...c, slot:undefined}));
-    setReading(true);
-    setStarted(true);
-    setSelectionMode("card");
-    setZoomCard(null);
-    setActiveSavedId(item.id);
-    setShowMemories(false);
-    setQuestion(item.question);
-    setCustomQuestion(item.question);
-    const spreadId = Number(item.spreadName.split(" ")[0]);
-    if ([1,2,3,5,7].includes(spreadId)) setSpread(spreadId);
-    requestAnimationFrame(() => document.getElementById("lectura")?.scrollIntoView({behavior:"smooth", block:"start"}));
-  }
-
-  function removeSavedReading(id:string) {
-    persistReadings(savedReadings.filter(r => r.id !== id));
-    if (activeSavedId === id) setActiveSavedId(null);
-  }
 
   function freshDeck(){
     return makeDeck();
@@ -359,7 +288,6 @@ export default function Home(){
     setReading(false);
     setStarted(false);
     setZoomCard(null);
-    setPositionInput("");
     setSelectionMode("card");
     setSelectionNotice("");
   }
@@ -369,7 +297,6 @@ export default function Home(){
     setStarted(true);
     setReading(false);
     setZoomCard(null);
-    setPositionInput("");
     setSelectionMode("card");
     setSelectionNotice("");
   }
@@ -384,7 +311,6 @@ export default function Home(){
     setReading(false);
     setStarted(false);
     setZoomCard(null);
-    setPositionInput("");
     setSelectionMode("card");
     setSelectionNotice("");
   }
@@ -393,7 +319,7 @@ export default function Home(){
   // La carta pulsada conserva su posición dentro de la baraja y recibe un slot.
   // La misma carta/slot alimenta arriba, abajo y la lectura.
   function choose(card:Card){
-    if(reading || !started || selectionMode !== "card") return;
+    if(reading) return;
 
     setDeckOrder(order => {
       const clicked = order.find(item => item.id === card.id);
@@ -427,29 +353,20 @@ export default function Home(){
 
   function chooseByPosition(position:number){
     if(!started || reading || selectionMode !== "position") return;
-
-    if(!Number.isInteger(position) || position < 1 || position > 78) return;
+    if(position < 1 || position > 78) return;
 
     const card = deckOrder[position - 1];
     if(!card) return;
 
-    if(card.slot != null){
-      setSelectionNotice(`La posición ${position} ya está seleccionada.`);
-      return;
-    }
+    const alreadySelected = card.slot != null;
+    if(!alreadySelected && picked.length >= count) return;
 
-    const selectedCount = deckOrder.filter(item => item.slot != null).length;
-    if(selectedCount >= count){
-      setSelectionNotice(`Esta tirada necesita ${count} carta${count === 1 ? "" : "s"}.`);
-      return;
-    }
-
-    const nextSlot = selectedCount + 1;
-
-    setDeckOrder(order =>
-      order.map(item => item.id === card.id ? {...item, slot: nextSlot} : item)
+    choose(card);
+    setSelectionNotice(
+      alreadySelected
+        ? `Has quitado la posición ${String(position).padStart(2,"0")}.`
+        : `Has marcado la posición ${String(position).padStart(2,"0")}.`
     );
-    setSelectionNotice("");
   }
 
   function changeCardAt(index:number){
@@ -476,7 +393,6 @@ export default function Home(){
     setStarted(true);
     setReading(false);
     setZoomCard(null);
-    setPositionInput("");
     setSelectionMode("card");
     setSelectionNotice("");
   }
@@ -583,11 +499,15 @@ export default function Home(){
       `Pregunta: ${effectiveQuestion}`,
       `Tirada: ${current.name} — ${current.positions.join(" / ")}`,
       "",
-      `Ver la tirada: ${url}`,
+      `Ver mi lectura: ${url}`,
       "",
       "CARTAS",
       ...selected.map((card, i) =>
-        `${i+1}. ${current.positions[i]}: ${card.name}\nSignificado: ${card.essence}\nLuz: ${card.light}\nSombra: ${card.shadow}\nConsejo: ${card.advice}\n${origin}/cards/${encodeURIComponent(card.file)}`
+        `${i+1}. ${current.positions[i]}: ${card.name}
+Significado: ${card.essence}
+Luz: ${card.light}
+Sombra: ${card.shadow}
+Consejo: ${card.advice}`
       ),
       "",
       "RESPUESTA A TU PREGUNTA",
@@ -609,36 +529,23 @@ export default function Home(){
   }
 
   async function shareReading(){
+    const url = shareUrl();
     const text = shareText();
-    const files: File[] = [];
-
-    if (typeof window !== "undefined" && typeof File !== "undefined") {
-      for (const card of selected) {
-        try {
-          const response = await fetch(`/cards/${card.file}`);
-          if (!response.ok) continue;
-          const blob = await response.blob();
-          files.push(new File([blob], card.file, {type: blob.type || "image/png"}));
-        } catch {
-          // Si una imagen no puede adjuntarse, seguimos con el enlace de la lectura.
-        }
-      }
-    }
 
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        if (files.length && navigator.canShare?.({files})) {
-          await navigator.share({title:"Tarot AO · Mi tirada", text, url:shareUrl(), files});
-        } else {
-          await navigator.share({title:"Tarot AO · Mi tirada", text, url:shareUrl()});
-        }
+        await navigator.share({title:"Tarot AO · Mi tirada", text, url});
         return;
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
       }
     }
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(`${text}\n${shareUrl()}`)}`, "_blank", "noopener,noreferrer");
+    const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const whatsappBase = isMobile
+      ? "https://api.whatsapp.com/send?text="
+      : "https://web.whatsapp.com/send?text=";
+    window.open(`${whatsappBase}${encodeURIComponent(`Mira mi lectura de Tarot AO\n${url}`)}`, "_blank", "noopener,noreferrer");
   }
 
   return <main className="appShell">
@@ -651,7 +558,6 @@ export default function Home(){
         </span>
       </a>
       <div className="headerRight">
-        <button className="secondary" type="button" onClick={() => setShowMemories(true)}>Mis lecturas{savedReadings.length ? ` · ${savedReadings.length}` : ""}</button>
         <div className="headerMeta">TAROT INTERACTIVO · 78 CARTAS</div>
         <div className="headerSubmeta">VIDA · SALUD · AUTOCONOCIMIENTO · PSICOLOGÍA</div>
       </div>
@@ -782,30 +688,37 @@ export default function Home(){
               <button
                 className={selectionMode === "card" ? "primary" : "secondary"}
                 type="button"
-                onClick={() => {setDeckOrder(order => order.map(item => ({...item, slot:undefined}))); setSelectionMode("card"); setSelectionNotice("");}}
-                disabled={picked.length >= count}
+                onClick={() => {
+                  setDeckOrder(order => order.map(item => ({...item, slot:undefined})));
+                  setSelectionMode("card");
+                  setSelectionNotice("");
+                }}
+                disabled={false}
               >
-                🃏 Escoger por vista
+                👁️ POR VISTA
               </button>
 
               <button
                 className={selectionMode === "position" ? "primary" : "secondary"}
                 type="button"
-                onClick={() => {setDeckOrder(order => order.map(item => ({...item, slot:undefined}))); setSelectionMode("position"); setSelectionNotice("");}}
-                disabled={picked.length >= count}
+                onClick={() => {
+                  setDeckOrder(order => order.map(item => ({...item, slot:undefined})));
+                  setSelectionMode("position");
+                  setSelectionNotice("");
+                }}
               >
-                🔢 Escoger por número
+                🔢 POR NÚMERO
               </button>
             </div>
 
             {selectionMode === "card" ? (
               <p style={{margin:"10px 0 0", opacity:0.72, fontSize:"0.92rem"}}>
-                La baraja ya está mezclada. Pulsa directamente las cartas que quieras elegir.
+                La baraja ya está mezclada. Pulsa las cartas que quieras elegir.
               </p>
             ) : (
               <div style={{margin:"16px 0 0"}}>
                 <div style={{fontWeight:700, marginBottom:"10px"}}>
-                  Marca {count === 1 ? "1 número" : `${count} números`} de la baraja mezclada.
+                  Marca exactamente {count === 1 ? "1 número" : `${count} números`}.
                 </div>
                 <div
                   role="group"
@@ -845,7 +758,7 @@ export default function Home(){
                   })}
                 </div>
                 <p style={{margin:"10px 0 0", opacity:0.72, fontSize:"0.9rem"}}>
-                  Solo ves números. Las cartas permanecen ocultas. Cada número corresponde a una posición de la baraja después de barajar.
+                  Solo aparecen los números. Las cartas permanecen ocultas. Cada número corresponde a una posición de la baraja después de barajar.
                 </p>
               </div>
             )}
@@ -866,9 +779,8 @@ export default function Home(){
         </div>
       </div>
 
-      <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "Inicia la tirada para elegir" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
-      {selectionMode === "card" && (
-      <div className="deck" aria-label="Baraja de 78 cartas">
+      <div className="deckToolbar"><span>{started ? (selectionMode === "position" ? "78 POSICIONES · BARAJADAS" : "78 CARTAS · BARAJADAS") : "78 CARTAS · VISTA CONTEMPLATIVA"}</span><small>{!started ? "PULSA CUALQUIER CARTA · VER SU FICHA" : picked.length===count ? "Tirada completa" : `Faltan ${count-picked.length}`}</small></div>
+      {selectionMode === "card" && <div className="deck" aria-label="Baraja de 78 cartas">
         {deckOrder.map((c) => {
           const pickNumber = c.slot != null ? c.slot - 1 : -1;
           const isPicked = pickNumber !== -1;
@@ -877,41 +789,24 @@ export default function Home(){
               className={`${isPicked ? "tarot picked" : "tarot"} ${!started ? "preStart" : ""}`}
               key={`${c.id}-${c.slot ?? 0}`}
               type="button"
-              onClick={() => started ? (selectionMode === "card" ? choose(c) : undefined) : setZoomCard(c)}
-              disabled={started && selectionMode !== "card"}
-              aria-label={!started ? c.name : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
-              title={!started ? c.name : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Posición ${deckOrder.indexOf(c) + 1}`}
+              onClick={() => {
+                if (!started) {
+                  setZoomCard(c);
+                  return;
+                }
+                choose(c);
+              }}
+              disabled={false}
+              aria-label={!started ? `Consultar ficha de ${c.name}` : isPicked ? `${c.name}, posición seleccionada ${pickNumber + 1}` : `Carta boca abajo, posición ${deckOrder.indexOf(c) + 1}`}
+              title={!started ? `Consultar ficha · ${c.name}` : isPicked ? `Seleccionada · posición ${deckOrder.indexOf(c) + 1}` : `Elegir posición ${deckOrder.indexOf(c) + 1}`}
             >
               {!started ? (
-                <span className="preStartFace">
+                <span className="preStartFace" style={{display:"block",position:"relative"}}>
                   <CardImage card={c} alt={c.name}/>
+                  <span style={{position:"absolute",left:"6px",right:"6px",bottom:"6px",padding:"5px 4px",borderRadius:"7px",background:"rgba(255,255,255,.9)",color:"#24201b",fontSize:"10px",fontWeight:800,letterSpacing:".06em",textAlign:"center",pointerEvents:"none"}}>VER FICHA</span>
                 </span>
               ) : (
-                <span className="tarotFlip" style={{position:"relative"}}>
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      position:"absolute",
-                      zIndex:5,
-                      top:"8px",
-                      left:"8px",
-                      minWidth:"26px",
-                      height:"26px",
-                      padding:"0 6px",
-                      borderRadius:"999px",
-                      display:"flex",
-                      alignItems:"center",
-                      justifyContent:"center",
-                      fontSize:"12px",
-                      fontWeight:800,
-                      lineHeight:1,
-                      background:"rgba(255,255,255,.92)",
-                      color:"#111",
-                      boxSizing:"border-box"
-                    }}
-                  >
-                    {deckOrder.indexOf(c) + 1}
-                  </span>
+                <span className="tarotFlip">
                   <span className="cardFace cardFaceBack">
                     <span className="backFrame backFrameOuter"></span>
                     <span className="backFrame backFrameInner"></span>
@@ -952,8 +847,8 @@ export default function Home(){
             </button>
           );
         })}
-      </div>
-      )}
+      </div>}
+
 
     </section>
 
@@ -998,60 +893,70 @@ export default function Home(){
       <div className="readingShare">
         <div className="label">Guardar o compartir esta lectura</div>
         <div className="shareButtons">
-          <button className="shareButton" type="button" onClick={saveCurrentReading}>Guardar en Mis lecturas</button>
           <button className="shareButton whatsapp" type="button" onClick={shareReading}>Compartir por WhatsApp</button>
           <button className="shareButton email" type="button" onClick={() => {
             const subject = encodeURIComponent("Mi tirada · Tarot AO");
             const body = encodeURIComponent(shareText());
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
           }}>Compartir por email</button>
+          <button className="shareButton other" type="button" onClick={shareReading}>Otras opciones</button>
         </div>
       </div>
     </section>}
 
-    {showMemories && (
-      <div className="cardZoomOverlay" role="dialog" aria-modal="true" aria-label="Mis lecturas" onClick={() => setShowMemories(false)}>
-        <div className="cardZoomPanel" onClick={e => e.stopPropagation()}>
-          <button className="cardZoomClose" type="button" onClick={() => setShowMemories(false)} aria-label="Cerrar">×</button>
-          <div style={{padding:"8px"}}>
-            <div className="label">HISTORIAL</div>
-            <h2 style={{marginTop:"6px"}}>Mis lecturas</h2>
-            {!savedReadings.length ? (
-              <p>Aquí aparecerán las lecturas que guardes.</p>
-            ) : (
-              <div style={{display:"grid",gap:"12px",marginTop:"20px"}}>
-                {savedReadings.map(item => (
-                  <article key={item.id} style={{border:"1px solid currentColor",borderRadius:"10px",padding:"14px"}}>
-                    <div style={{fontSize:".82rem",opacity:.68}}>{new Date(item.createdAt).toLocaleString("es-ES")}</div>
-                    <strong style={{display:"block",marginTop:"4px"}}>{item.spreadName}</strong>
-                    <p style={{margin:"7px 0"}}>“{item.question}”</p>
-                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
-                      <button className="primary" type="button" onClick={() => loadSavedReading(item)}>Abrir lectura</button>
-                      <button className="textButton" type="button" onClick={() => removeSavedReading(item.id)}>Eliminar</button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    )}
-
     {zoomCard && (
       <div
-        className="cardZoomOverlay"
         role="dialog"
         aria-modal="true"
-        aria-label={`Carta ${zoomCard.name}`}
+        aria-label={`Ficha de ${zoomCard.name}`}
         onClick={() => setZoomCard(null)}
+        style={{
+          position:"fixed",
+          inset:0,
+          zIndex:99999,
+          display:"flex",
+          alignItems:"center",
+          justifyContent:"center",
+          padding:"20px",
+          boxSizing:"border-box",
+          background:"rgba(20,18,15,.78)",
+          overflowY:"auto"
+        }}
       >
-        <div className="cardZoomPanel" onClick={e => e.stopPropagation()}>
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position:"relative",
+            width:"min(900px, 100%)",
+            maxHeight:"calc(100vh - 40px)",
+            overflowY:"auto",
+            boxSizing:"border-box",
+            background:"#f7f3eb",
+            color:"#24201b",
+            borderRadius:"22px",
+            padding:"28px",
+            boxShadow:"0 25px 80px rgba(0,0,0,.35)"
+          }}
+        >
           <button
-            className="cardZoomClose"
             type="button"
             onClick={() => setZoomCard(null)}
-            aria-label="Cerrar"
+            aria-label="Cerrar ficha"
+            style={{
+              position:"absolute",
+              top:"12px",
+              right:"12px",
+              zIndex:2,
+              width:"42px",
+              height:"42px",
+              borderRadius:"50%",
+              border:"1px solid rgba(36,32,27,.25)",
+              background:"rgba(255,255,255,.9)",
+              color:"#24201b",
+              fontSize:"28px",
+              lineHeight:1,
+              cursor:"pointer"
+            }}
           >
             ×
           </button>
@@ -1059,10 +964,9 @@ export default function Home(){
           <div
             style={{
               display:"grid",
-              gridTemplateColumns:"minmax(130px,35%) minmax(0,1fr)",
-              gap:"28px",
-              alignItems:"start",
-              padding:"8px"
+              gridTemplateColumns:"minmax(170px, 32%) minmax(0,1fr)",
+              gap:"30px",
+              alignItems:"start"
             }}
           >
             <div style={{minWidth:0}}>

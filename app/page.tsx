@@ -575,24 +575,17 @@ export default function Home(){
   function shareUrl(){
     if (typeof window === "undefined") return "";
     const ids = selected.map(c => c.id).join("-");
-    return `${window.location.origin}/compartir/${ids}?q=${encodeURIComponent(effectiveQuestion)}`;
+    return `${window.location.origin}/compartir/${ids}?q=${encodeURIComponent(effectiveQuestion)}&s=${spread}&v=${spread === 3 ? threeCardVariant : 0}`;
   }
 
   function shareText(){
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const url = shareUrl();
 
     const lines = [
       "Tarot AO · Anna Oriol",
+      "",
       `Pregunta: ${effectiveQuestion}`,
       `Tirada: ${current.name} — ${current.positions.join(" / ")}`,
-      "",
-      `Ver la tirada: ${url}`,
-      "",
-      "CARTAS",
-      ...selected.map((card, i) =>
-        `${i+1}. ${current.positions[i]}: ${card.name}\nSignificado: ${card.essence}\nLuz: ${card.light}\nSombra: ${card.shadow}\nConsejo: ${card.advice}\n${origin}/cards/${encodeURIComponent(card.file)}`
-      ),
       "",
       "RESPUESTA A TU PREGUNTA",
       synthesis(),
@@ -605,6 +598,8 @@ export default function Home(){
       "",
       "CLAVE PARA LLEVARLO A TU VIDA",
       practicalKey(),
+      "",
+      `Ver mi lectura: ${url}`,
       "",
       "Lectura simbólica para la reflexión personal."
     ];

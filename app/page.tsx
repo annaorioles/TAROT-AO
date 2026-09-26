@@ -362,6 +362,7 @@ export default function Home(){
     setPositionInput("");
     setSelectionMode("card");
     setSelectionNotice("");
+    setActiveSavedId(null);
   }
 
   function startReading(){
@@ -372,6 +373,8 @@ export default function Home(){
     setPositionInput("");
     setSelectionMode("card");
     setSelectionNotice("");
+    // Una nueva tirada es una nueva lectura: no debe reemplazar la anterior.
+    setActiveSavedId(null);
   }
 
   function selectCat(i:number){
@@ -387,6 +390,7 @@ export default function Home(){
     setPositionInput("");
     setSelectionMode("card");
     setSelectionNotice("");
+    setActiveSavedId(null);
   }
 
   // Este es el único mecanismo de selección.
